@@ -1,0 +1,7 @@
+# List of kernel modules that should not load automatically
+
+# ptp_kvm.ko should only load when the kvm hypervisor is available on the target
+blocklist ptp_kvm.ko
+# On v6.14+ kernel versions we see
+# --> init: Failed to insmod '/lib/modules/ppp_mppe.ko' with args '': No such device
+blocklist ppp_mppe.ko

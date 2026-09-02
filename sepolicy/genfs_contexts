@@ -1,0 +1,23 @@
+genfscon sysfs   /devices/platform/88f00000.memory/rmtfs					u:object_r:sysfs_rmtfs:s0
+genfscon sysfs   /devices/platform/88f00000.rmtfs/rmtfs						u:object_r:sysfs_rmtfs:s0
+genfscon sysfs   /devices/platform/remoteproc-adsp/remoteproc					u:object_r:sysfs_remoteproc:s0
+genfscon sysfs   /devices/platform/remoteproc-cdsp/remoteproc					u:object_r:sysfs_remoteproc:s0
+genfscon sysfs   /devices/platform/soc@0/4080000.remoteproc					u:object_r:sysfs_remoteproc:s0
+genfscon sysfs   /devices/platform/soc@0/8300000.remoteproc					u:object_r:sysfs_remoteproc:s0
+genfscon sysfs   /devices/platform/soc@0/17300000.remoteproc					u:object_r:sysfs_remoteproc:s0
+genfscon sysfs   /devices/platform/soc@0/ae00000.mdss						u:object_r:sysfs_gpu:s0
+genfscon sysfs   /devices/platform/soc@0/ae00000.display-subsystem				u:object_r:sysfs_gpu:s0
+genfscon sysfs   /firmware/devicetree/base/compatible						u:object_r:sysfs_dt_compatible:s0
+
+#wakeups on db845c and rb5
+genfscon sysfs   /devices/platform/remoteproc-adsp/wakeup					u:object_r:sysfs_wakeup:s0
+genfscon sysfs   /devices/platform/remoteproc-cdsp/wakeup					u:object_r:sysfs_wakeup:s0
+genfscon sysfs   /devices/platform/soc@0/17300000.remoteproc/wakeup				u:object_r:sysfs_wakeup:s0
+genfscon sysfs   /devices/platform/soc@0/1c00000.pci/pci0000:00					u:object_r:sysfs_wakeup:s0
+genfscon sysfs   /devices/platform/soc@0/1c00000.pcie/pci0000:00				u:object_r:sysfs_wakeup:s0
+genfscon sysfs   /devices/platform/soc@0/8300000.remoteproc/wakeup				u:object_r:sysfs_wakeup:s0
+genfscon sysfs   /devices/platform/soc@0/a6f8800.usb/wakeup					u:object_r:sysfs_wakeup:s0
+genfscon sysfs   /devices/platform/soc@0/a6f8800.usb/a600000.usb/wakeup				u:object_r:sysfs_wakeup:s0
+genfscon sysfs   /devices/platform/soc@0/a8f8800.usb/wakeup					u:object_r:sysfs_wakeup:s0
+genfscon sysfs   /devices/platform/soc@0/a8f8800.usb/a800000.usb/wakeup				u:object_r:sysfs_wakeup:s0
+genfscon sysfs   /devices/platform/soc@0/c440000.spmi/spmi-0					u:object_r:sysfs_wakeup:s0

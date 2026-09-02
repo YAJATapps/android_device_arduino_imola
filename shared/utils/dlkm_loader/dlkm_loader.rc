@@ -1,0 +1,18 @@
+on early-init
+    # start module load in the background
+    start vendor.dlkm_loader
+    # load "leaf" GKI modules
+    exec u:r:modprobe:s0 -- /system/bin/modprobe -a -d /system/lib/modules zram.ko
+    exec u:r:modprobe:s0 -- /system/bin/modprobe -a -d /system/lib/modules hci_uart.ko
+    exec u:r:modprobe:s0 -- /system/bin/modprobe -a -d /system/lib/modules rfcomm.ko
+    # led-class-multicolor.ko as found in android14-5.15 but missing in android13-5.15
+    exec u:r:modprobe:s0 -- /system/bin/modprobe -a -d /system/lib/modules led-class-multicolor.ko
+    # regmap-spmi.ko as found in android13-5.15 but missing in android14-5.15
+    exec u:r:modprobe:s0 -- /system/bin/modprobe -a -d /system/lib/modules regmap-spmi.ko
+
+service vendor.dlkm_loader /vendor/bin/dlkm_loader
+    class main
+    user root
+    group root system
+    disabled
+    oneshot

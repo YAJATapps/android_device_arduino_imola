@@ -1,0 +1,79 @@
+/dev/block/platform/soc@0/1d84000\.ufshc/by-name/fsc		u:object_r:modem_block_device:s0
+/dev/block/platform/soc@0/1d84000\.ufshc/by-name/fsg		u:object_r:modem_block_device:s0
+/dev/block/platform/soc@0/1d84000\.ufshc/by-name/modemst[12]	u:object_r:modem_block_device:s0
+/dev/block/platform/soc@0/1d84000\.ufshc/by-name/metadata	u:object_r:metadata_block_device:s0
+/dev/block/platform/soc@0/1d84000\.ufshc/by-name/super		u:object_r:super_block_device:s0
+/dev/block/platform/soc@0/1d84000\.ufshc/by-name/userdata	u:object_r:userdata_block_device:s0
+/dev/block/platform/soc@0/1d84000\.ufshc/by-name/misc		u:object_r:misc_block_device:s0
+/dev/block/zram0						u:object_r:swap_block_device:s0
+
+/dev/dri				u:object_r:dri_device:s0
+/dev/dri/card0				u:object_r:graphics_device:s0
+/dev/dri/renderD128			u:object_r:gpu_device:s0
+/dev/qcom_rmtfs_mem1			u:object_r:rmtfs_device:s0
+/dev/ttyMSM0				u:object_r:console_device:s0
+
+/sys/bus/platform/drivers/qcom-q6v5-mss							u:object_r:sysfs_mss:s0
+/sys/module/qcom_q6v5_mss								u:object_r:sysfs_mss:s0
+/sys/devices/platform/88f00000.memory/rmtfs						u:object_r:sysfs_rmtfs:s0
+
+/sys/devices/platform/soc@0/4080000.remoteproc						u:object_r:sysfs_remoteproc:s0
+/sys/devices/platform/soc@0/8300000.remoteproc						u:object_r:sysfs_remoteproc:s0
+/sys/devices/platform/soc@0/17300000.remoteproc						u:object_r:sysfs_remoteproc:s0
+/sys/devices/platform/soc@0/ae00000.mdss						u:object_r:sysfs_gpu:s0
+/sys/devices/platform/soc@0/ae00000.display-subsystem					u:object_r:sysfs_gpu:s0
+
+#wakeups on db845c and rb5
+/sys/devices/platform/remoteproc-adsp/wakeup						u:object_r:sysfs_wakeup:s0
+/sys/devices/platform/remoteproc-cdsp/wakeup						u:object_r:sysfs_wakeup:s0
+/sys/devices/platform/soc@0/17300000.remoteproc/wakeup					u:object_r:sysfs_wakeup:s0
+/sys/devices/platform/soc@0/1c00000.pci/pci0000:00					u:object_r:sysfs_wakeup:s0
+/sys/devices/platform/soc@0/1c00000.pcie/pci0000:00					u:object_r:sysfs_wakeup:s0
+/sys/devices/platform/soc@0/8300000.remoteproc/wakeup					u:object_r:sysfs_wakeup:s0
+/sys/devices/platform/soc@0/a6f8800.usb/wakeup						u:object_r:sysfs_wakeup:s0
+/sys/devices/platform/soc@0/a6f8800.usb/a600000.usb/wakeup				u:object_r:sysfs_wakeup:s0
+/sys/devices/platform/soc@0/a8f8800.usb/wakeup						u:object_r:sysfs_wakeup:s0
+/sys/devices/platform/soc@0/a8f8800.usb/a800000.usb/wakeup				u:object_r:sysfs_wakeup:s0
+/sys/devices/platform/soc@0/c440000.spmi/spmi-0						u:object_r:sysfs_wakeup:s0
+
+/sys/class/remoteproc									u:object_r:sysfs_remoteproc:s0
+/sys/devices/platform/remoteproc-adsp/remoteproc					u:object_r:sysfs_remoteproc:s0
+/sys/devices/platform/remoteproc-cdsp/remoteproc					u:object_r:sysfs_remoteproc:s0
+
+/sys/firmware/devicetree/base/compatible						u:object_r:sysfs_dt_compatible:s0
+
+/data/vendor/tmp(/.*)?									u:object_r:tqftpserv_vendor_data_file:s0
+/data/vendor/readwrite(/.*)?								u:object_r:tqftpserv_vendor_data_file:s0
+/data/vendor/readonly(/.*)?								u:object_r:tqftpserv_vendor_data_file:s0
+
+/system/bin/tinymix									u:object_r:tinymix_exec:s0
+
+/vendor/bin/grep									u:object_r:vendor_toolbox_exec:s0
+/vendor/bin/ifconfig									u:object_r:vendor_toolbox_exec:s0
+/vendor/bin/pd-mapper									u:object_r:pd_mapper_exec:s0
+/vendor/bin/qrtr-cfg									u:object_r:qrtr_exec:s0
+/vendor/bin/qrtr-ns									u:object_r:qrtr_exec:s0
+/vendor/bin/rmtfs									u:object_r:rmtfs_exec:s0
+/vendor/bin/tqftpserv									u:object_r:tqftpserv_exec:s0
+/vendor/bin/suspend_blocker								u:object_r:suspend_blocker_exec:s0
+/vendor/bin/set_bdaddr\.sh								u:object_r:set_bdaddr_exec:s0
+/vendor/bin/set_ethaddr\.sh								u:object_r:set_ethaddr_exec:s0
+/vendor/bin/set_hw\.sh									u:object_r:set_hw_exec:s0
+/vendor/bin/set_udc\.sh									u:object_r:set_udc_exec:s0
+
+/vendor/firmware(/.*)?									u:object_r:vendor_firmware_file:s0
+
+/vendor/lib(64)?/android\.hardware\.graphics\.allocator@2\.0\.so			u:object_r:same_process_hal_file:s0
+/vendor/lib(64)?/android\.hardware\.graphics\.allocator@3\.0\.so			u:object_r:same_process_hal_file:s0
+/vendor/lib(64)?/android\.hardware\.graphics\.allocator@4\.0\.so			u:object_r:same_process_hal_file:s0
+/vendor/lib(64)?/dri/.*									u:object_r:same_process_hal_file:s0
+/vendor/lib(64)?/hw/gralloc\.gbm\.so							u:object_r:same_process_hal_file:s0
+/vendor/lib(64)?/hw/android\.hardware\.health@2\.0-impl-2\.1-cuttlefish\.so		u:object_r:same_process_hal_file:s0
+/vendor/lib(64)?/hw/vulkan\.freedreno\.so						u:object_r:same_process_hal_file:s0
+/vendor/lib(64)?/libdrm\.so								u:object_r:same_process_hal_file:s0
+/vendor/lib(64)?/libdrm_freedreno\.so							u:object_r:same_process_hal_file:s0
+/vendor/lib(64)?/libgallium_dri\.so							u:object_r:same_process_hal_file:s0
+/vendor/lib(64)?/libgbm_mesa\.so							u:object_r:same_process_hal_file:s0
+/vendor/lib(64)?/libglapi\.so								u:object_r:same_process_hal_file:s0
+/vendor/lib(64)?/libqrtr\.so								u:object_r:same_process_hal_file:s0
+/vendor/lib(64)?/libui\.so								u:object_r:same_process_hal_file:s0
