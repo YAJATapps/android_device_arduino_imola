@@ -4,8 +4,8 @@
 #
 
 PRODUCT_MAKEFILES := \
-    $(LOCAL_PATH)/lineage_imola.mk
+    $(LOCAL_DIR)/lineage_imola.mk
 
 COMMON_LUNCH_CHOICES := \
-    lineage_imola-userdebug \
-    lineage_imola-eng
+    lineage_imola-trunk_staging-userdebug \
+    lineage_imola-trunk_staging-eng
