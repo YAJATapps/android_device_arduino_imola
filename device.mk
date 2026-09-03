@@ -37,7 +37,8 @@ AB_OTA_PARTITIONS += \
 
 # Soong namespaces
 PRODUCT_SOONG_NAMESPACES += \
-    $(DEVICE_PATH)
+    $(DEVICE_PATH) \
+    hardware/qcom/wlan
 
 # DLKM Loader
 include $(DEVICE_PATH)/shared/utils/dlkm_loader/device.mk

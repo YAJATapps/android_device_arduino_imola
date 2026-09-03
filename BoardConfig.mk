@@ -31,6 +31,7 @@ TARGET_BOARD_PLATFORM := imola
 TARGET_NO_KERNEL := false
 TARGET_KERNEL_SOURCE := kernel/arduino/imola
 TARGET_KERNEL_CONFIG := imola_defconfig
+BOARD_KERNEL_IMAGE_NAME := Image.gz
 BOARD_INCLUDE_DTB_IN_BOOTIMG := true
 BOARD_BOOT_HEADER_VERSION := 2
 BOARD_KERNEL_PAGESIZE := 4096
@@ -85,7 +86,6 @@ BOARD_SEPOLICY_DIRS += $(DEVICE_PATH)/shared/utils/dlkm_loader/sepolicy/
 
 # Treble
 PRODUCT_FULL_TREBLE := true
-BOARD_VNDK_VERSION := current
 
 # Graphics (Mesa Freedreno + drm_hwcomposer + minigbm_msm)
 include $(DEVICE_PATH)/shared/graphics/drm_hwcomposer/BoardConfig.mk
