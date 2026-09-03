@@ -40,6 +40,7 @@ BOARD_KERNEL_CMDLINE := earlycon
 BOARD_KERNEL_CMDLINE += firmware_class.path=/vendor/firmware/
 BOARD_KERNEL_CMDLINE += init=/init printk.devkmsg=on
 BOARD_KERNEL_CMDLINE += deferred_probe_timeout=30
+BOARD_KERNEL_CMDLINE += clk_ignore_unused pd_ignore_unused
 BOARD_KERNEL_CMDLINE += qcom_geni_serial.con_enabled=1
 BOARD_KERNEL_CMDLINE += console=ttyMSM0,115200n8
 BOARD_KERNEL_CMDLINE += androidboot.boot_devices=soc@0/4744000.sdhci
@@ -111,3 +112,6 @@ ifeq ($(HOST_OS),linux)
 endif
 
 BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
+
+# Inherit from vendor BoardConfig if available
+-include vendor/arduino/imola/BoardConfigVendor.mk

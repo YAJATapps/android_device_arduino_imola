@@ -95,3 +95,6 @@ PRODUCT_VENDOR_PROPERTIES += \
 
 PRODUCT_SHIPPING_API_LEVEL := 36
 TARGET_HARDWARE := imola
+
+# Inherit from vendor blobs if available
+$(call inherit-product-if-exists, vendor/arduino/imola/imola-vendor.mk)
