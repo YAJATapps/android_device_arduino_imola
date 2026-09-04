@@ -85,8 +85,10 @@ include $(DEVICE_PATH)/shared/utils/dlkm_loader/BoardConfig.mk
 BOARD_IMOLA_DYNAMIC_PARTITIONS_PARTITION_LIST += system_dlkm vendor_dlkm
 BOARD_SEPOLICY_DIRS += $(DEVICE_PATH)/shared/utils/dlkm_loader/sepolicy/
 
-# Treble
+# Treble & VINTF
 PRODUCT_FULL_TREBLE := true
+DEVICE_MANIFEST_FILE := $(DEVICE_PATH)/manifest.xml
+DEVICE_MATRIX_FILE := $(DEVICE_PATH)/compatibility_matrix.xml
 
 # Graphics (Mesa Freedreno + drm_hwcomposer + minigbm_msm)
 include $(DEVICE_PATH)/shared/graphics/drm_hwcomposer/BoardConfig.mk
