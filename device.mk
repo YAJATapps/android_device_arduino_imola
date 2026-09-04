@@ -98,5 +98,8 @@ PRODUCT_VENDOR_PROPERTIES += \
 PRODUCT_SHIPPING_API_LEVEL := 36
 TARGET_HARDWARE := imola
 
+# VINTF Kernel Requirements (permit 6.18 kernel on Android 16)
+PRODUCT_OTA_ENFORCE_VINTF_KERNEL_REQUIREMENTS := false
+
 # Inherit from vendor blobs if available
 $(call inherit-product-if-exists, vendor/arduino/imola/imola-vendor.mk)
