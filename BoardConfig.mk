@@ -48,7 +48,7 @@ BOARD_KERNEL_CMDLINE += deferred_probe_timeout=30
 BOARD_KERNEL_CMDLINE += clk_ignore_unused pd_ignore_unused
 BOARD_KERNEL_CMDLINE += qcom_geni_serial.con_enabled=1
 BOARD_KERNEL_CMDLINE += console=ttyMSM0,115200n8
-BOARD_KERNEL_CMDLINE += androidboot.boot_devices=soc@0/4744000.sdhci
+BOARD_KERNEL_CMDLINE += androidboot.boot_devices=soc@0/4744000.mmc
 BOARD_KERNEL_CMDLINE += androidboot.hardware=imola
 BOARD_KERNEL_CMDLINE += androidboot.verifiedbootstate=orange
 BOARD_KERNEL_CMDLINE += androidboot.slot_suffix=_a
