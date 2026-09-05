@@ -52,6 +52,7 @@ BOARD_KERNEL_CMDLINE += androidboot.boot_devices=soc@0/4744000.mmc
 BOARD_KERNEL_CMDLINE += androidboot.hardware=imola
 BOARD_KERNEL_CMDLINE += androidboot.verifiedbootstate=orange
 BOARD_KERNEL_CMDLINE += androidboot.slot_suffix=_a
+BOARD_KERNEL_CMDLINE += androidboot.selinux=permissive
 
 # File systems & Partitions
 BOARD_SYSTEMIMAGE_FILE_SYSTEM_TYPE := erofs
