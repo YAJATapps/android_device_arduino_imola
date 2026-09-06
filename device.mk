@@ -114,6 +114,10 @@ PRODUCT_VENDOR_PROPERTIES += \
     persist.sys.zram_enabled=1 \
     debug.stagefright.c2inputsurface=-1
 
+# TODO: Remove before release (skips ~50s on-device dex2oat on fresh flash)
+PRODUCT_VENDOR_PROPERTIES += \
+    dalvik.vm.disable-odrefresh=true
+
 PRODUCT_SHIPPING_API_LEVEL := 36
 TARGET_HARDWARE := imola
 
