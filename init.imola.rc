@@ -68,8 +68,9 @@ service suspend_blocker /vendor/bin/suspend_blocker
     group system
     user root
 
-service logcat_kmsg /system/bin/logcat -b crash,system,main -v brief *:I -f /dev/kmsg
-    class core
+service logcat_console /system/bin/logcat -b crash,system,main -v brief *:I
+    class main
     user root
     group log root system
+    console
 
