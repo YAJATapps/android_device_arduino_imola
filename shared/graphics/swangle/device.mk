@@ -24,7 +24,7 @@ PRODUCT_PACKAGES += \
     libGLESv2_angle
 
 PRODUCT_VENDOR_PROPERTIES += \
-    ro.hardware.egl=angle \
+    ro.hardware.egl=angle
 
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.sf.lcd_density=160 \
@@ -38,6 +38,7 @@ PRODUCT_COPY_FILES += \
 # Vulkan
 TARGET_VULKAN_SUPPORT := true
 TARGET_USES_VULKAN := true
+TARGET_USES_SWR := true
 
 PRODUCT_PACKAGES += vulkan.pastel
 

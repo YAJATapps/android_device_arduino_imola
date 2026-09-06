@@ -92,9 +92,9 @@ PRODUCT_COPY_FILES += \
     $(DEVICE_PATH)/etc/media_codecs.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs.xml \
     $(DEVICE_PATH)/etc/media_profiles.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_profiles.xml
 
-# Graphics (drm_hwcomposer + mesa + minigbm)
+# Graphics (drm_hwcomposer + swangle + minigbm)
 include $(DEVICE_PATH)/shared/graphics/drm_hwcomposer/device.mk
-include $(DEVICE_PATH)/shared/graphics/mesa/device.mk
+include $(DEVICE_PATH)/shared/graphics/swangle/device.mk
 include $(DEVICE_PATH)/shared/graphics/minigbm_msm/device.mk
 
 # Properties

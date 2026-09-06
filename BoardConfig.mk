@@ -92,10 +92,11 @@ PRODUCT_FULL_TREBLE := true
 DEVICE_MANIFEST_FILE := $(DEVICE_PATH)/manifest.xml
 DEVICE_MATRIX_FILE := $(DEVICE_PATH)/compatibility_matrix.xml
 
-# Graphics (Mesa Freedreno + drm_hwcomposer + minigbm_msm)
+# Graphics (drm_hwcomposer + swangle + minigbm_msm)
 include $(DEVICE_PATH)/shared/graphics/drm_hwcomposer/BoardConfig.mk
-include $(DEVICE_PATH)/shared/graphics/mesa/BoardConfig.mk
-BOARD_SEPOLICY_DIRS += $(DEVICE_PATH)/shared/graphics/minigbm_msm/sepolicy/
+BOARD_SEPOLICY_DIRS += \
+    $(DEVICE_PATH)/shared/graphics/minigbm_msm/sepolicy/ \
+    $(DEVICE_PATH)/shared/graphics/swangle/sepolicy/
 
 # Wi-Fi
 WPA_SUPPLICANT_VERSION := VER_0_8_X
