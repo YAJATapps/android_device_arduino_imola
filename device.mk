@@ -86,9 +86,19 @@ PRODUCT_COPY_FILES += \
     $(DEVICE_PATH)/fstab.imola:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.imola \
     frameworks/base/data/keyboards/Generic.kl:$(TARGET_COPY_OUT_VENDOR)/usr/keylayout/imola.kl
 
-# Audio & Media configs
+# Audio HAL (AIDL) & Media configs
+PRODUCT_PACKAGES += \
+    com.android.hardware.audio \
+    audio_policy_volumes.xml \
+    default_volume_tables.xml \
+    r_submix_audio_policy_configuration.xml \
+    usb_audio_policy_configuration.xml
+
+$(call inherit-product, hardware/interfaces/audio/aidl/default/audio_effects.mk)
+
 PRODUCT_COPY_FILES += \
     $(DEVICE_PATH)/etc/audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_configuration.xml \
+    frameworks/av/services/audiopolicy/config/bluetooth_audio_policy_configuration_7_0.xml:$(TARGET_COPY_OUT_VENDOR)/etc/bluetooth_audio_policy_configuration_7_0.xml \
     $(DEVICE_PATH)/etc/media_codecs.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs.xml \
     $(DEVICE_PATH)/etc/media_profiles.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_profiles.xml
 
