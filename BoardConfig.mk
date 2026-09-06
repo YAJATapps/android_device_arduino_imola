@@ -93,11 +93,17 @@ PRODUCT_FULL_TREBLE := true
 DEVICE_MANIFEST_FILE := $(DEVICE_PATH)/manifest.xml
 DEVICE_MATRIX_FILE := $(DEVICE_PATH)/compatibility_matrix.xml
 
-# Graphics (drm_hwcomposer + swangle + minigbm_msm)
+# Graphics (drm_hwcomposer + [mesa | swangle] + minigbm_msm)
 include $(DEVICE_PATH)/shared/graphics/drm_hwcomposer/BoardConfig.mk
 BOARD_SEPOLICY_DIRS += \
-    $(DEVICE_PATH)/shared/graphics/minigbm_msm/sepolicy/ \
+    $(DEVICE_PATH)/shared/graphics/minigbm_msm/sepolicy/
+
+ifeq ($(TARGET_BUILD_MESA), true)
+include $(DEVICE_PATH)/shared/graphics/mesa/BoardConfig.mk
+else
+BOARD_SEPOLICY_DIRS += \
     $(DEVICE_PATH)/shared/graphics/swangle/sepolicy/
+endif
 
 # Wi-Fi
 WPA_SUPPLICANT_VERSION := VER_0_8_X

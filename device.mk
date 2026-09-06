@@ -109,10 +109,17 @@ PRODUCT_COPY_FILES += \
     $(DEVICE_PATH)/etc/media_codecs.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_codecs.xml \
     $(DEVICE_PATH)/etc/media_profiles.xml:$(TARGET_COPY_OUT_VENDOR)/etc/media_profiles.xml
 
-# Graphics (drm_hwcomposer + swangle + minigbm)
+# Graphics (drm_hwcomposer + [mesa | swangle] + minigbm)
 include $(DEVICE_PATH)/shared/graphics/drm_hwcomposer/device.mk
-include $(DEVICE_PATH)/shared/graphics/swangle/device.mk
 include $(DEVICE_PATH)/shared/graphics/minigbm_msm/device.mk
+
+# Toggle between hardware Mesa (out-of-tree prebuilt in vendor/) and CPU SwANGLE
+TARGET_BUILD_MESA ?= false
+ifeq ($(TARGET_BUILD_MESA), true)
+include $(DEVICE_PATH)/shared/graphics/mesa/device.mk
+else
+include $(DEVICE_PATH)/shared/graphics/swangle/device.mk
+endif
 
 # Properties
 PRODUCT_VENDOR_PROPERTIES += \
