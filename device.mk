@@ -51,8 +51,10 @@ PRODUCT_PACKAGES += \
     android.hardware.boot-service.default_recovery \
     vendor_compatibility_matrix.xml
 
-# Power and Thermal AIDL HALs
+# Power, Health, and Thermal AIDL HALs
 PRODUCT_PACKAGES += \
+    android.hardware.health-service.example \
+    android.hardware.health-service.example_recovery \
     android.hardware.power-service.example \
     android.hardware.power.stats-service.example \
     com.android.hardware.thermal
