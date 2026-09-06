@@ -73,6 +73,7 @@ PRODUCT_COPY_FILES += \
     $(DEVICE_PATH)/init.imola.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/init.imola.rc \
     $(DEVICE_PATH)/init.imola.usb.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/init.imola.usb.rc \
     $(DEVICE_PATH)/ueventd.imola.rc:$(TARGET_COPY_OUT_VENDOR)/etc/ueventd.rc \
+    $(DEVICE_PATH)/cgroups.json:$(TARGET_COPY_OUT_VENDOR)/etc/cgroups.json \
     $(DEVICE_PATH)/fstab.imola:$(TARGET_COPY_OUT_RAMDISK)/first_stage_ramdisk/fstab.imola \
     $(DEVICE_PATH)/fstab.imola:$(TARGET_COPY_OUT_VENDOR)/etc/fstab.imola \
     frameworks/base/data/keyboards/Generic.kl:$(TARGET_COPY_OUT_VENDOR)/usr/keylayout/imola.kl

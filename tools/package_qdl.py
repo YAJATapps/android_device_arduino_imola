@@ -415,7 +415,8 @@ def main():
             "clk_ignore_unused pd_ignore_unused "
             "androidboot.hardware=imola androidboot.boot_devices=soc@0/4744000.mmc "
             "androidboot.verifiedbootstate=orange androidboot.slot_suffix=_a "
-            "androidboot.selinux=permissive efi=noruntime"
+            "androidboot.selinux=permissive efi=noruntime "
+            "printk.devkmsg=on loglevel=7"
         ),
         help="Kernel command line to embed in /boot.scr",
     )
