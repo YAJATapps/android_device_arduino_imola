@@ -18,20 +18,20 @@
 PRODUCT_REQUIRES_INSECURE_EXECMEM_FOR_SWIFTSHADER := true
 
 # ANGLE provides an OpenGL implementation built on top of Vulkan.
-PRODUCT_PACKAGES := \
+PRODUCT_PACKAGES += \
     libEGL_angle \
     libGLESv1_CM_angle \
     libGLESv2_angle
 
-PRODUCT_VENDOR_PROPERTIES := \
+PRODUCT_VENDOR_PROPERTIES += \
     ro.hardware.egl=angle \
 
-PRODUCT_PROPERTY_OVERRIDES := \
+PRODUCT_PROPERTY_OVERRIDES += \
     ro.sf.lcd_density=160 \
     ro.opengles.version=196608 \
     persist.demo.rotationlock=1
 
-PRODUCT_COPY_FILES := \
+PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.opengles.aep.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.opengles.aep.xml \
     frameworks/native/data/etc/android.software.opengles.deqp.level-2022-03-01.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.software.opengles.deqp.level.xml
 

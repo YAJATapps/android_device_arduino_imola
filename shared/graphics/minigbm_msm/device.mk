@@ -17,14 +17,14 @@
 # which will be used by the minigbm allocator compilation
 $(call soong_config_set,minigbm,platform,msm)
 
-PRODUCT_PACKAGES := \
+PRODUCT_PACKAGES += \
     android.hardware.graphics.allocator-service.minigbm \
     mapper.minigbm
 
-PRODUCT_PROPERTY_OVERRIDES := \
+PRODUCT_PROPERTY_OVERRIDES += \
     ro.hardware.gralloc=minigbm
 
 ifeq ($(TARGET_USES_SWR), true)
-PRODUCT_VENDOR_PROPERTIES := \
+PRODUCT_VENDOR_PROPERTIES += \
     vendor.minigbm.debug=nocompression
 endif

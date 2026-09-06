@@ -15,5 +15,5 @@
 #
 
 # Hardware Composer HAL
-PRODUCT_PACKAGES := \
+PRODUCT_PACKAGES += \
     com.android.hardware.graphics.composer.drm_hwcomposer
