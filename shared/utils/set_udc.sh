@@ -11,7 +11,8 @@
 # which we set in init.<hw>.usb.rc and set it to the available
 # on-board USB controller from /sys/class/udc instead.
 
-# Searching for db845c's DWC3 UDC explicitly
-UDC_ADDRESS=a600000
-UDC=`/vendor/bin/ls /sys/class/udc/ | /vendor/bin/grep $UDC_ADDRESS`
-setprop vendor.usb.controller $UDC
+# Auto-detect the on-board UDC controller from /sys/class/udc
+UDC=$(ls /sys/class/udc/ 2>/dev/null | head -n 1)
+if [ -n "${UDC}" ]; then
+    setprop vendor.usb.controller "${UDC}"
+fi
