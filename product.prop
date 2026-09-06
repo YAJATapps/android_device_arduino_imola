@@ -35,3 +35,7 @@ bluetooth.profile.ccp.server.enabled=false
 bluetooth.profile.csip.set_coordinator.enabled=false
 bluetooth.profile.hap.client.enabled=false
 bluetooth.profile.vcp.controller.enabled=false
+
+# Default USB / ADB configuration
+persist.sys.usb.config=adb
+ro.adb.secure=0

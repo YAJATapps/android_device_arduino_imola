@@ -118,6 +118,11 @@ PRODUCT_VENDOR_PROPERTIES += \
 PRODUCT_VENDOR_PROPERTIES += \
     dalvik.vm.disable-odrefresh=true
 
+# Enable ADB by default on boot
+PRODUCT_PROPERTY_OVERRIDES += \
+    persist.sys.usb.config=adb \
+    ro.adb.secure=0
+
 PRODUCT_SHIPPING_API_LEVEL := 36
 TARGET_HARDWARE := imola
 
