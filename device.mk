@@ -57,6 +57,14 @@ PRODUCT_PACKAGES += \
     android.hardware.power.stats-service.example \
     com.android.hardware.thermal
 
+# Security HALs (KeyMint & Gatekeeper software implementations)
+PRODUCT_PACKAGES += \
+    android.hardware.security.keymint-service \
+    com.android.hardware.gatekeeper.nonsecure
+
+PRODUCT_COPY_FILES += \
+    frameworks/native/data/etc/android.hardware.keystore.app_attest_key.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.keystore.app_attest_key.xml
+
 # Bluetooth utilities
 PRODUCT_PACKAGES += bdaddr
 PRODUCT_COPY_FILES += \
