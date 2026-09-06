@@ -475,6 +475,10 @@ def main():
     kernel_path = os.path.join(product_out, "kernel")
     ramdisk_path = os.path.join(product_out, "ramdisk.img")
     dtb_path = os.path.join(product_out, "dtb.img")
+    dtb_compiled = os.path.join(product_out, "obj/KERNEL_OBJ/arch/arm64/boot/dts/qcom/qrb2210-arduino-imola.dtb")
+    if os.path.isfile(dtb_compiled):
+        if not os.path.isfile(dtb_path) or os.path.getmtime(dtb_compiled) >= os.path.getmtime(dtb_path):
+            shutil.copy2(dtb_compiled, dtb_path)
     super_path = os.path.join(product_out, "super.img")
     simg2img_bin = os.path.join(top_dir, "out/host/linux-x86/bin/simg2img")
     if not os.path.isfile(simg2img_bin):
