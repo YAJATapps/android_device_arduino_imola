@@ -416,6 +416,8 @@ def main():
             "androidboot.hardware=imola androidboot.boot_devices=soc@0/4744000.mmc "
             "androidboot.verifiedbootstate=orange androidboot.slot_suffix=_a "
             "androidboot.selinux=permissive efi=noruntime "
+            "androidboot.serialno=imola0001 "
+            "firmware_class.path=/vendor/firmware,/vendor/firmware/qcom "
             "printk.devkmsg=on loglevel=7"
         ),
         help="Kernel command line to embed in /boot.scr",
