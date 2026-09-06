@@ -64,8 +64,13 @@ PRODUCT_PACKAGES += \
     android.hardware.security.keymint-service \
     com.android.hardware.gatekeeper.nonsecure
 
+# USB Host & AIDL HAL
+PRODUCT_PACKAGES += \
+    android.hardware.usb-service.example
+
 PRODUCT_COPY_FILES += \
-    frameworks/native/data/etc/android.hardware.keystore.app_attest_key.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.keystore.app_attest_key.xml
+    frameworks/native/data/etc/android.hardware.keystore.app_attest_key.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.keystore.app_attest_key.xml \
+    frameworks/native/data/etc/android.hardware.usb.host.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.usb.host.xml
 
 # Bluetooth utilities
 PRODUCT_PACKAGES += bdaddr
@@ -120,9 +125,10 @@ PRODUCT_VENDOR_PROPERTIES += \
 PRODUCT_VENDOR_PROPERTIES += \
     dalvik.vm.disable-odrefresh=true
 
-# Enable ADB by default on boot
+# Enable ADB by default (TCP 5555 for network ADB; USB operates in host mode)
 PRODUCT_PROPERTY_OVERRIDES += \
-    persist.sys.usb.config=adb \
+    persist.sys.usb.config=none \
+    service.adb.tcp.port=5555 \
     ro.adb.secure=0
 
 PRODUCT_SHIPPING_API_LEVEL := 36
