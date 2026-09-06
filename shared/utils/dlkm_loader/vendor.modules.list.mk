@@ -123,6 +123,5 @@ VENDOR_DLKM_KERNEL_MODULES_LIST := \
     videobuf2-dma-contig.ko \
     videobuf2-memops.ko \
     videobuf2-v4l2.ko \
-    videodev.ko \
-    xt_MASQUERADE.ko \
-    xt_addrtype.ko
+    videodev.ko
+

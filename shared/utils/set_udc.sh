@@ -12,7 +12,14 @@
 # on-board USB controller from /sys/class/udc instead.
 
 # Auto-detect the on-board UDC controller from /sys/class/udc
-UDC=$(ls /sys/class/udc/ 2>/dev/null | head -n 1)
-if [ -n "${UDC}" ]; then
-    setprop vendor.usb.controller "${UDC}"
-fi
+count=0
+while [ $count -lt 30 ]; do
+    UDC=$(ls /sys/class/udc/ 2>/dev/null | head -n 1)
+    if [ -n "${UDC}" ]; then
+        setprop vendor.usb.controller "${UDC}"
+        exit 0
+    fi
+    sleep 1
+    count=$((count + 1))
+done
+

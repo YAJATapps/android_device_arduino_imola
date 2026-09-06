@@ -42,7 +42,7 @@ BOARD_MKBOOTIMG_ARGS += --base 0x0 --kernel_offset 0x0 --ramdisk_offset 0x0
 BOARD_MKBOOTIMG_ARGS += --pagesize $(BOARD_KERNEL_PAGESIZE)
 
 BOARD_KERNEL_CMDLINE := earlycon
-BOARD_KERNEL_CMDLINE += firmware_class.path=/vendor/firmware/
+BOARD_KERNEL_CMDLINE += firmware_class.path=/vendor/firmware,/vendor/firmware/qcom
 BOARD_KERNEL_CMDLINE += init=/init printk.devkmsg=on
 BOARD_KERNEL_CMDLINE += deferred_probe_timeout=30
 BOARD_KERNEL_CMDLINE += clk_ignore_unused pd_ignore_unused
@@ -53,6 +53,7 @@ BOARD_KERNEL_CMDLINE += androidboot.hardware=imola
 BOARD_KERNEL_CMDLINE += androidboot.verifiedbootstate=orange
 BOARD_KERNEL_CMDLINE += androidboot.slot_suffix=_a
 BOARD_KERNEL_CMDLINE += androidboot.selinux=permissive
+BOARD_KERNEL_CMDLINE += androidboot.serialno=imola0001
 BOARD_KERNEL_CMDLINE += efi=noruntime
 
 # File systems & Partitions
