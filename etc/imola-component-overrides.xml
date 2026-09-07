@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+    <component-override package="org.lineageos.setupwizard">
+        <component class=".SetupWizardActivity" enabled="false" />
+        <component class=".wizardmanager.WizardManager" enabled="false" />
+    </component-override>
+</config>
