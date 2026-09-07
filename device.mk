@@ -160,13 +160,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     service.adb.tcp.port=5555 \
     ro.adb.secure=0
 
-# Disable Setup Wizard
-PRODUCT_PROPERTY_OVERRIDES += \
-    ro.setupwizard.mode=DISABLED
-
-PRODUCT_COPY_FILES += \
-    $(DEVICE_PATH)/etc/imola-component-overrides.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/sysconfig/imola-component-overrides.xml
-
 # Default timezone and locale
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.sys.timezone=America/New_York \
