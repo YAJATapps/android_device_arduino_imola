@@ -98,6 +98,12 @@ PRODUCT_COPY_FILES += \
     $(DEVICE_PATH)/shared/utils/bdaddr/set_bdaddr.sh:$(TARGET_COPY_OUT_VENDOR)/bin/set_bdaddr.sh \
     $(DEVICE_PATH)/product.prop:$(TARGET_COPY_OUT_PRODUCT)/build.prop
 
+# Qualcomm mainline utilities
+PRODUCT_PACKAGES += \
+    rmtfs \
+    tqftpserv \
+    qrtr-cfg
+
 # Hardware scripts
 PRODUCT_COPY_FILES += \
     $(DEVICE_PATH)/shared/utils/set_hw.sh:$(TARGET_COPY_OUT_VENDOR)/bin/set_hw.sh \

@@ -14,6 +14,10 @@ on late-fs
     mount_all /vendor/etc/fstab.imola --late
 
 on init
+    # Symlink by-name partitions for bootdevice lookup
+    mkdir /dev/block/bootdevice 0775 root system
+    symlink /dev/block/by-name /dev/block/bootdevice/by-name
+
     # ZRAM setup
     write /sys/block/zram0/comp_algorithm lz4
     # Initialize cpusets for 4-core Cortex-A53 (CPUs 0-3)
@@ -74,4 +78,34 @@ service logcat_console /system/bin/logcat -b crash,system,main -v brief *:I
     user root
     group log root system
     console
+
+# Modem firmware & remote storage services
+on post-fs-data
+    mkdir /data/vendor 0771 root system
+    mkdir /data/vendor/tmp 0771 root system
+    mkdir /data/vendor/readwrite 0771 root system
+    mkdir /data/vendor/readonly 0771 root system
+    mkdir /data/vendor/readonly/firmware 0771 root system
+    mkdir /data/vendor/readonly/firmware/image 0771 root system
+    write /sys/class/firmware/timeout 1
+    exec - root -- /vendor/bin/qrtr-cfg 1
+    start vendor.tqftpserv
+    start vendor.rmtfs
+
+on shutdown
+    stop vendor.rmtfs
+
+service vendor.tqftpserv /vendor/bin/tqftpserv
+    class core
+    user root
+    group system
+    stdio_to_kmsg
+    disabled
+
+service vendor.rmtfs /vendor/bin/rmtfs -o /dev/block/by-name -P -r -s
+    class core
+    user root
+    group system
+    stdio_to_kmsg
+    disabled
 
