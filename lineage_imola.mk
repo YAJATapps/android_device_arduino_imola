@@ -20,4 +20,6 @@ PRODUCT_BRAND := Arduino
 PRODUCT_MODEL := Uno Q
 PRODUCT_MANUFACTURER := Arduino
 
+PRODUCT_CHARACTERISTICS := tablet,nosdcard
+
 PRODUCT_GMS_CLIENTID_BASE := android-arduino
