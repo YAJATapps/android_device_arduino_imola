@@ -99,7 +99,6 @@ PRODUCT_COPY_FILES += \
 # Bluetooth
 PRODUCT_PACKAGES += \
     android.hardware.bluetooth-service.default \
-    android.hardware.bluetooth.audio-impl \
     bdaddr
 
 PRODUCT_COPY_FILES += \
