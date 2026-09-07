@@ -153,11 +153,23 @@ PRODUCT_VENDOR_PROPERTIES += \
 PRODUCT_VENDOR_PROPERTIES += \
     dalvik.vm.disable-odrefresh=true
 
-# Enable ADB by default (TCP 5555 for network ADB; USB operates in host mode)
+# ADB configuration (TCP 5555 for network ADB; USB operates in host mode)
 PRODUCT_PROPERTY_OVERRIDES += \
     persist.sys.usb.config=none \
     service.adb.tcp.port=5555 \
     ro.adb.secure=0
+
+# Disable Setup Wizard
+PRODUCT_PROPERTY_OVERRIDES += \
+    ro.setupwizard.mode=DISABLED
+
+# Default timezone and locale
+PRODUCT_PROPERTY_OVERRIDES += \
+    persist.sys.timezone=America/New_York \
+    persist.sys.timezone_confidence=100 \
+    persist.sys.country=US \
+    persist.sys.language=en \
+    ro.product.locale=en-US
 
 PRODUCT_SHIPPING_API_LEVEL := 36
 TARGET_HARDWARE := imola
