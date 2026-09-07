@@ -2,20 +2,26 @@
 """
 package_qdl.py
 
-Packages LineageOS 23.2 (Android 16) for Arduino Uno Q (Imola) into a 
-standalone QDL (Qualcomm Emergency Download / EDL mode) flash package.
+Packages LineageOS 23.2 (Android 16) for Arduino Uno Q (Imola) into a
+distribution-ready image package matching the official Arduino / Armbian layout.
 
-Boot chain architecture:
-  Qualcomm PBL -> XBL -> TrustZone/Hyp -> ABL (Das U-Boot 2026.01) -> boot.scr -> booti -> Android 16
+Package Layout:
+  arduino-images/
+  ├── disk-sdcard.img.esp       # 512MB EFI/boot partition (P67: boot.scr, Image, ramdisk, dtb)
+  ├── disk-sdcard.img.root      # 4096MB Root/OS partition (P68: super.img)
+  └── flash/                    # Qualcomm firmware, programmer, partition tables & XMLs
+      ├── prog_firehose_ddr.elf # EDL programmer
+      ├── rawprogram0.xml       # References ../disk-sdcard.img.esp & ../disk-sdcard.img.root
+      ├── rawprogram0.nouser.xml# Flashes without wiping userdata
+      ├── patch0.xml            # GPT disk sizing patches
+      ├── gpt_main0.bin, gpt_backup0.bin
+      └── ... (Qualcomm binaries: xbl, tz, hyp, abl/u-boot, rpm, etc.)
 
-Output contains:
-  - prog_firehose_ddr.elf (EDL programmer from qcombin)
-  - Qualcomm silicon firmware binaries (xbl, tz, rpm, hyp, abl/u-boot, devcfg, etc.)
-  - gpt_main0.bin & gpt_backup0.bin (configured with efi, super, metadata, userdata)
-  - rawprogram0.xml & patch0.xml (EDL flash scripts)
-  - efi.img (512MB FAT32 boot partition containing boot.scr, Image, ramdisk.img, dtb.img)
-  - super.img (Android dynamic partitions: system, vendor, product, system_ext, dlkm)
-  - flash.sh (Convenient one-click flashing script)
+Flashing compatibility:
+  - Official arduino-flasher-cli / armbian-flasher
+  - Standard Qualcomm EDL tools (qdl):
+      cd <package_dir>/flash
+      qdl --storage emmc prog_firehose_ddr.elf rawprogram0.xml patch0.xml
 """
 
 import argparse
@@ -24,11 +30,15 @@ import shutil
 import struct
 import subprocess
 import sys
+import tarfile
 import tempfile
 import time
 import uuid
 import xml.etree.ElementTree as ET
 import zlib
+
+# Release archive naming prefix (defaults to LineageOS-23.2-imola-, can be overridden via RELEASE_PREFIX)
+RELEASE_PREFIX = os.environ.get("RELEASE_PREFIX", "LineageOS-23.2-imola-")
 
 # Default disk geometry for 32GB eMMC on Arduino Uno Q
 TOTAL_DISK_SECTORS = 61071360  # ~29.1 GiB usable
@@ -92,7 +102,7 @@ def create_gpt_entry(name, first_lba, last_lba, type_guid_bytes=LINUX_FS_GUID, f
     return struct.pack("<16s16sQQQ", type_guid_bytes, uniq_guid, first_lba, last_lba, flags) + name_bytes
 
 
-def patch_gpt_tables(qcombin_board_dir, out_dir):
+def patch_gpt_tables(qcombin_board_dir, flash_dir):
     src_main = os.path.join(qcombin_board_dir, "gpt_main0.bin")
     src_backup = os.path.join(qcombin_board_dir, "gpt_backup0.bin")
 
@@ -120,50 +130,49 @@ def patch_gpt_tables(qcombin_board_dir, out_dir):
     # Mirror the entire 32 sectors of partition entries
     backup_data[0:16384] = main_data[1024:17408]
 
-    dst_main = os.path.join(out_dir, "gpt_main0.bin")
-    dst_backup = os.path.join(out_dir, "gpt_backup0.bin")
+    dst_main = os.path.join(flash_dir, "gpt_main0.bin")
+    dst_backup = os.path.join(flash_dir, "gpt_backup0.bin")
 
     with open(dst_main, "wb") as f:
         f.write(main_data)
     with open(dst_backup, "wb") as f:
         f.write(backup_data)
 
-    print(f"[+] Successfully generated Android GPT tables:")
+    print(f"[+] Successfully generated Android GPT tables in flash/:")
     print(f"    - P67 efi:      {EFI_START_SECTOR} .. {EFI_END_SECTOR} (512 MB)")
     print(f"    - P68 super:    {SUPER_START_SECTOR} .. {SUPER_END_SECTOR} (4096 MB)")
     print(f"    - P69 metadata: {METADATA_START_SECTOR} .. {METADATA_END_SECTOR} (64 MB)")
     print(f"    - P70 userdata: {USERDATA_START_SECTOR} .. {USERDATA_END_SECTOR} (~{(USERDATA_SECTORS*512)/(1024**3):.2f} GB)")
 
 
-def generate_rawprogram(src_xml, dst_xml):
+def generate_rawprogram(src_xml, dst_xml, flash_dir, include_userdata=True):
     tree = ET.parse(src_xml)
     root = tree.getroot()
 
     new_programs = []
+    has_boot_img = os.path.isfile(os.path.join(flash_dir, "boot.img"))
 
     for p in list(root):
         label = p.get("label", "")
         fn = p.get("filename", "")
 
-        # Clean relative path prefixes
-        if fn.startswith("../"):
-            p.set("filename", os.path.basename(fn))
-
         # boot_a and boot_b are 4MB dummy partitions on Uno Q.
-        # Clear filename so qdl doesn't fail trying to flash whole boot images to 4MB.
+        # If boot.img is not present, clear filename so qdl does not fail.
         if label in ["boot_a", "boot_b"]:
-            p.set("filename", "")
+            if not has_boot_img:
+                p.set("filename", "")
+            new_programs.append(p)
 
-        if label == "efi":
-            p.set("filename", "efi.img")
+        elif label == "efi":
+            p.set("filename", "../disk-sdcard.img.esp")
             p.set("size_in_KB", "524288.0")
             p.set("num_partition_sectors", str(EFI_SECTORS))
             p.set("start_sector", str(EFI_START_SECTOR))
             p.set("start_byte_hex", hex(EFI_START_SECTOR * 512))
             new_programs.append(p)
 
-        elif label == "rootfs":
-            # Replace rootfs with super
+        elif label in ["rootfs", "super"]:
+            # Replace rootfs with LineageOS super partition
             p_super = ET.Element("program", {
                 "start_sector": str(SUPER_START_SECTOR),
                 "size_in_KB": "4194304.0",
@@ -172,7 +181,7 @@ def generate_rawprogram(src_xml, dst_xml):
                 "file_sector_offset": "0",
                 "num_partition_sectors": str(SUPER_SECTORS),
                 "readbackverify": "false",
-                "filename": "super.img",
+                "filename": "../disk-sdcard.img.root",
                 "sparse": "false",
                 "start_byte_hex": hex(SUPER_START_SECTOR * 512),
                 "SECTOR_SIZE_IN_BYTES": "512",
@@ -197,22 +206,23 @@ def generate_rawprogram(src_xml, dst_xml):
             })
             new_programs.append(p_metadata)
 
-            # Add userdata partition (wipe first 33 sectors to trigger clean format on first boot)
-            p_userdata = ET.Element("program", {
-                "start_sector": str(USERDATA_START_SECTOR),
-                "size_in_KB": "16.5",
-                "physical_partition_number": "0",
-                "partofsingleimage": "false",
-                "file_sector_offset": "0",
-                "num_partition_sectors": "33",
-                "readbackverify": "false",
-                "filename": "zeros_33sectors.bin",
-                "sparse": "false",
-                "start_byte_hex": hex(USERDATA_START_SECTOR * 512),
-                "SECTOR_SIZE_IN_BYTES": "512",
-                "label": "userdata",
-            })
-            new_programs.append(p_userdata)
+            if include_userdata:
+                # Add userdata partition (wipe first 33 sectors to trigger clean format on first boot)
+                p_userdata = ET.Element("program", {
+                    "start_sector": str(USERDATA_START_SECTOR),
+                    "size_in_KB": "16.5",
+                    "physical_partition_number": "0",
+                    "partofsingleimage": "false",
+                    "file_sector_offset": "0",
+                    "num_partition_sectors": "33",
+                    "readbackverify": "false",
+                    "filename": "zeros_33sectors.bin",
+                    "sparse": "false",
+                    "start_byte_hex": hex(USERDATA_START_SECTOR * 512),
+                    "SECTOR_SIZE_IN_BYTES": "512",
+                    "label": "userdata",
+                })
+                new_programs.append(p_userdata)
 
         elif label == "userdata":
             # Skip old placeholder userdata
@@ -228,7 +238,7 @@ def generate_rawprogram(src_xml, dst_xml):
     # Write out cleanly formatted XML
     ET.indent(tree, space="  ", level=0)
     tree.write(dst_xml, encoding="utf-8", xml_declaration=True)
-    print(f"[+] Successfully generated Android {os.path.basename(dst_xml)}")
+    print(f"[+] Successfully generated {os.path.basename(dst_xml)}")
 
 
 def build_efi_image(out_path, kernel_path, ramdisk_path, dtb_path, cmdline):
@@ -241,7 +251,7 @@ def build_efi_image(out_path, kernel_path, ramdisk_path, dtb_path, cmdline):
     mcopy = shutil.which("mcopy")
     mmd = shutil.which("mmd")
     if not mcopy or not mmd:
-        sys.exit("[-] ERROR: 'mtools' (mcopy, mmd) is required to build efi.img.\n    Please run: sudo apt install -y mtools")
+        sys.exit("[-] ERROR: 'mtools' (mcopy, mmd) is required.\n    Please run: sudo apt install -y mtools")
 
     # 1. Allocate 512MB empty image
     with open(out_path, "wb") as f:
@@ -315,7 +325,7 @@ def build_efi_image(out_path, kernel_path, ramdisk_path, dtb_path, cmdline):
         subprocess.run([mcopy, "-i", out_path, dtb_path, "::/dtb.img"], check=True)
         subprocess.run([mcopy, "-i", out_path, dtb_path, "::/qrb2210-arduino-imola.dtb"], check=True)
 
-    print(f"[+] efi.img created successfully ({os.path.getsize(out_path) // (1024*1024)} MB).")
+    print(f"[+] disk-sdcard.img.esp created successfully ({os.path.getsize(out_path) // (1024*1024)} MB).")
     print(f"    - Native U-Boot Script:     /boot.scr (with 8-byte subheader)")
     print(f"    - Extlinux Config:          /extlinux/extlinux.conf")
     print(f"    - Android Kernel Image:     /Image")
@@ -324,7 +334,7 @@ def build_efi_image(out_path, kernel_path, ramdisk_path, dtb_path, cmdline):
 
 
 def process_super_image(src_super, dst_super, simg2img_bin):
-    print(f"[*] Processing super.img: {src_super} -> {dst_super}")
+    print(f"[*] Processing super image: {src_super} -> {dst_super}")
     with open(src_super, "rb") as f:
         magic = f.read(4)
 
@@ -335,79 +345,22 @@ def process_super_image(src_super, dst_super, simg2img_bin):
             sys.exit(f"[-] ERROR: simg2img binary not found! Needed to unsparse {src_super}")
         subprocess.run([simg2img_bin, src_super, dst_super], check=True)
     else:
-        print("[*] super.img is already a raw image. Creating hardlink/copy...")
+        print("[*] super.img is already a raw image. Copying...")
         if os.path.exists(dst_super):
             os.remove(dst_super)
-        try:
-            os.link(src_super, dst_super)
-        except OSError:
-            shutil.copy2(src_super, dst_super)
+        shutil.copy2(src_super, dst_super)
 
-    print(f"[+] super.img ready (size: {os.path.getsize(dst_super) // (1024*1024)} MB).")
-
-
-def generate_flash_script(out_dir):
-    script_path = os.path.join(out_dir, "flash.sh")
-    content = """#!/usr/bin/env bash
-set -euo pipefail
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "${SCRIPT_DIR}"
-
-echo "========================================================"
-echo " Arduino Uno Q (Imola) - Pure LineageOS 23.2 Flasher"
-echo "========================================================"
-
-if ! command -v qdl &>/dev/null; then
-    echo "[-] ERROR: 'qdl' tool not found!"
-    echo "    Install it via: sudo apt install -y qdl"
-    exit 1
-fi
-
-echo "[*] Checking for Arduino Uno Q in EDL Mode (05c6:9008)..."
-if ! lsusb -d 05c6:9008 >/dev/null 2>&1; then
-    echo "[-] Device not found in EDL mode (05c6:9008)."
-    echo "    Please set the EDL jumper / test point on the Arduino Uno Q"
-    echo "    and reconnect the USB-C cable to your computer."
-    exit 1
-fi
-echo "[+] Detected Arduino Uno Q in EDL mode!"
-
-# Check USB device permissions
-if [ "${EUID}" -ne 0 ]; then
-    DEV_PATH=$(lsusb -d 05c6:9008 | awk '{print "/dev/bus/usb/" $2 "/" substr($4, 1, 3)}')
-    if [ -n "${DEV_PATH}" ] && [ ! -w "${DEV_PATH}" ]; then
-        echo "[*] Elevating with sudo to access ${DEV_PATH}..."
-        exec sudo "$0" "$@"
-    fi
-fi
-
-echo "[*] Flashing Qualcomm firmware, bootloader, LineageOS 23.2 super.img, and partition table..."
-echo "[*] This completely wipes previous OS and installs pure LineageOS across the eMMC."
-
-qdl --storage emmc --include "${SCRIPT_DIR}" prog_firehose_ddr.elf rawprogram0.xml patch0.xml
-
-echo ""
-echo "========================================================"
-echo " [SUCCESS] Flashing complete!"
-echo " 1. Remove the EDL jumper from the Arduino Uno Q."
-echo " 2. Power cycle the board (unplug and replug USB-C)."
-echo " 3. LineageOS 23.2 (Android 16) will boot cleanly!"
-echo "========================================================"
-"""
-    with open(script_path, "w") as f:
-        f.write(content)
-    os.chmod(script_path, 0o755)
-    print(f"[+] Created executable {script_path}")
+    print(f"[+] disk-sdcard.img.root ready (size: {os.path.getsize(dst_super) // (1024*1024)} MB).")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Package LineageOS 23.2 for Arduino Uno Q into a QDL package")
+    parser = argparse.ArgumentParser(description="Package LineageOS 23.2 for Arduino Uno Q into official release format")
     parser.add_argument("--top", default=None, help="Path to Android build root directory")
-    parser.add_argument("--out-dir", default=None, help="Target directory for QDL package")
-    parser.add_argument("--desktop", action="store_true", help="Also place copy/symlink on Desktop/imola-android-qdl")
+    parser.add_argument("--out-dir", default=None, help="Target directory for release package (defaults to product_out/arduino-images)")
+    parser.add_argument("--desktop", action="store_true", help="Package directly to ~/Desktop/arduino-images")
     parser.add_argument("--qcombin-dir", default=None, help="Path to qcombin/Agatti directory")
     parser.add_argument("--skip-super", action="store_true", help="Skip super.img processing (faster for testing)")
+    parser.add_argument("--archive", choices=["tar.xz", "tar.zst", "zip"], default=None, help="Optionally compress the release package into an archive")
     parser.add_argument(
         "--cmdline",
         default=(
@@ -458,17 +411,22 @@ def main():
     # Output directory
     if args.out_dir:
         out_dir = os.path.abspath(args.out_dir)
+    elif args.desktop:
+        out_dir = os.path.join(os.path.expanduser("~"), "Desktop/arduino-images")
     else:
-        out_dir = os.path.join(product_out, "imola_qdl_package")
+        out_dir = os.path.join(product_out, "arduino-images")
 
-    os.makedirs(out_dir, exist_ok=True)
+    flash_dir = os.path.join(out_dir, "flash")
+    os.makedirs(flash_dir, exist_ok=True)
+
     print(f"========================================================")
-    print(f" Packaging LineageOS 23.2 QDL Bundle for Arduino Uno Q")
-    print(f" Top Dir:      {top_dir}")
-    print(f" Product Out:  {product_out}")
-    print(f" Qcombin Dir:  {qcombin_dir}")
-    print(f" Output Dir:   {out_dir}")
-    print(f" Boot Method:  Native U-Boot boot.scr (booti)")
+    print(f" Packaging LineageOS 23.2 Official Release Bundle")
+    print(f" Target Device: Arduino Uno Q (Imola)")
+    print(f" Top Dir:       {top_dir}")
+    print(f" Product Out:   {product_out}")
+    print(f" Qcombin Dir:   {qcombin_dir}")
+    print(f" Output Dir:    {out_dir}")
+    print(f" Format:        Official Arduino / Armbian Layout")
     print(f"========================================================")
 
     # Required Android artifacts
@@ -488,52 +446,68 @@ def main():
         if not os.path.isfile(fpath):
             sys.exit(f"[-] ERROR: Missing required Android artifact: {fpath}")
 
-    # 1. Copy Qualcomm Firmware binaries & programmer into out_dir
-    print("[*] Copying Qualcomm firmware & EDL programmer from qcombin...")
-    shutil.copy2(os.path.join(qcombin_dir, "prog_firehose_ddr.elf"), out_dir)
-    shutil.copy2(os.path.join(qcombin_board_dir, "patch0.xml"), out_dir)
+    # 1. Copy Qualcomm Firmware binaries & programmer into flash_dir
+    print("[*] Copying Qualcomm firmware & EDL programmer into flash/...")
+    shutil.copy2(os.path.join(qcombin_dir, "prog_firehose_ddr.elf"), flash_dir)
+    shutil.copy2(os.path.join(qcombin_board_dir, "patch0.xml"), flash_dir)
 
     for item in os.listdir(qcombin_board_dir):
         ext = os.path.splitext(item)[1].lower()
-        if ext in [".elf", ".mbn", ".bin"] and not item.startswith("gpt_"):
-            shutil.copy2(os.path.join(qcombin_board_dir, item), out_dir)
+        if ext in [".elf", ".mbn", ".bin"] and not item.startswith("gpt_main0") and not item.startswith("gpt_backup0"):
+            shutil.copy2(os.path.join(qcombin_board_dir, item), flash_dir)
+        elif item in ["LICENSE", "boot.img"]:
+            shutil.copy2(os.path.join(qcombin_board_dir, item), flash_dir)
 
-    # 2. Generate Android GPT partitions
-    patch_gpt_tables(qcombin_board_dir, out_dir)
+    # 2. Generate Android GPT partitions into flash_dir
+    patch_gpt_tables(qcombin_board_dir, flash_dir)
 
-    # 3. Generate rawprogram0.xml
-    generate_rawprogram(os.path.join(qcombin_board_dir, "rawprogram0.xml"), os.path.join(out_dir, "rawprogram0.xml"))
+    # 3. Generate rawprogram0.xml & rawprogram0.nouser.xml into flash_dir
+    src_rawprogram = os.path.join(qcombin_board_dir, "rawprogram0.xml")
+    generate_rawprogram(src_rawprogram, os.path.join(flash_dir, "rawprogram0.xml"), flash_dir, include_userdata=True)
+    generate_rawprogram(src_rawprogram, os.path.join(flash_dir, "rawprogram0.nouser.xml"), flash_dir, include_userdata=False)
 
-    # 4. Build efi.img
-    efi_img_path = os.path.join(out_dir, "efi.img")
-    build_efi_image(efi_img_path, kernel_path, ramdisk_path, dtb_path, args.cmdline)
+    # 4. Build disk-sdcard.img.esp (512MB boot partition) in package root
+    esp_img_path = os.path.join(out_dir, "disk-sdcard.img.esp")
+    build_efi_image(esp_img_path, kernel_path, ramdisk_path, dtb_path, args.cmdline)
 
-    # 5. Process super.img
+    # 5. Process disk-sdcard.img.root (unsparsed super.img) in package root
     if not args.skip_super:
-        dst_super = os.path.join(out_dir, "super.img")
-        process_super_image(super_path, dst_super, simg2img_bin)
+        dst_root = os.path.join(out_dir, "disk-sdcard.img.root")
+        process_super_image(super_path, dst_root, simg2img_bin)
 
-    # 6. Generate flash.sh
-    generate_flash_script(out_dir)
-
-    # Desktop symlink/copy if requested
-    if args.desktop:
-        desktop_target = os.path.join(os.path.expanduser("~"), "Desktop/imola-android-qdl")
-        if os.path.islink(desktop_target) or os.path.exists(desktop_target):
-            if os.path.islink(desktop_target):
-                os.unlink(desktop_target)
-            else:
-                shutil.rmtree(desktop_target)
-        os.symlink(out_dir, desktop_target)
-        print(f"[+] Linked package to Desktop: {desktop_target}")
+    # 6. Optionally archive package
+    if args.archive:
+        date_str = time.strftime("%Y%m%d")
+        archive_name = f"{RELEASE_PREFIX}{date_str}.{args.archive}"
+        archive_path = os.path.join(os.path.dirname(out_dir), archive_name)
+        print(f"[*] Creating distribution archive: {archive_path}...")
+        if args.archive == "tar.zst":
+            cmd = ["tar", "-I", "zstd -T0", "-cf", archive_path, "-C", os.path.dirname(out_dir), os.path.basename(out_dir)]
+            subprocess.run(cmd, check=True)
+        elif args.archive == "tar.xz":
+            cmd = ["tar", "-I", "xz -T0", "-cf", archive_path, "-C", os.path.dirname(out_dir), os.path.basename(out_dir)]
+            subprocess.run(cmd, check=True)
+        elif args.archive == "zip":
+            shutil.make_archive(os.path.splitext(archive_path)[0], "zip", os.path.dirname(out_dir), os.path.basename(out_dir))
+        print(f"[+] Archive ready: {archive_path}")
 
     print("")
     print("========================================================")
-    print(" [SUCCESS] QDL Android Package generated successfully!")
-    print(f" Package Location: {out_dir}")
-    print(" To flash to Arduino Uno Q in EDL mode:")
-    print(f"   cd {out_dir}")
-    print("   ./flash.sh")
+    print(" [SUCCESS] LineageOS 23.2 Image Package Ready!")
+    print(f" Location: {out_dir}")
+    print(" Package Layout:")
+    print(f"   {os.path.basename(out_dir)}/")
+    print("   ├── disk-sdcard.img.esp       (512MB EFI/boot partition)")
+    print("   ├── disk-sdcard.img.root      (4096MB LineageOS 23.2 super.img)")
+    print("   └── flash/                    (Qualcomm firmware, EDL programmer, XMLs)")
+    print("")
+    print(" Compatible Flashing Methods:")
+    print("   1. Official Arduino Flasher CLI:")
+    print(f"      arduino-flasher-cli flash {out_dir}")
+    print("   2. Armbian Flasher GUI / CLI")
+    print("   3. Native QDL (standalone):")
+    print(f"      cd {flash_dir}")
+    print("      qdl --storage emmc prog_firehose_ddr.elf rawprogram0.xml patch0.xml")
     print("========================================================")
 
 
