@@ -163,6 +163,8 @@ PRODUCT_VENDOR_PROPERTIES += \
     persist.sys.zram_enabled=1 \
     wifi.interface=wlan0 \
     wifi.direct.interface=p2p-dev-wlan0 \
+    media.c2.hal.selection=aidl \
+    debug.c2.use_dmabufheaps=1 \
     debug.stagefright.c2inputsurface=-1
 
 # TODO: Remove before release (skips ~50s on-device dex2oat on fresh flash)
