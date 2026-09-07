@@ -24,7 +24,8 @@ PRODUCT_PACKAGES += \
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.hardware.gralloc=minigbm
 
-ifeq ($(TARGET_USES_SWR), true)
+# QCM2290/QRB2210 DPU lacks a hardware UBWC decoder on display planes (has_no_ubwc = true).
+# Display buffers must be uncompressed (linear) for DRM/KMS scanout.
 PRODUCT_VENDOR_PROPERTIES += \
     vendor.minigbm.debug=nocompression
-endif
+
