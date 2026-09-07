@@ -98,6 +98,7 @@ include $(DEVICE_PATH)/shared/graphics/drm_hwcomposer/BoardConfig.mk
 BOARD_SEPOLICY_DIRS += \
     $(DEVICE_PATH)/shared/graphics/minigbm_msm/sepolicy/
 
+TARGET_BUILD_MESA ?= true
 ifeq ($(TARGET_BUILD_MESA), true)
 include $(DEVICE_PATH)/shared/graphics/mesa/BoardConfig.mk
 else

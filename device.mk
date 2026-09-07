@@ -114,7 +114,7 @@ include $(DEVICE_PATH)/shared/graphics/drm_hwcomposer/device.mk
 include $(DEVICE_PATH)/shared/graphics/minigbm_msm/device.mk
 
 # Toggle between hardware Mesa (out-of-tree prebuilt in vendor/) and CPU SwANGLE
-TARGET_BUILD_MESA ?= false
+TARGET_BUILD_MESA ?= true
 ifeq ($(TARGET_BUILD_MESA), true)
 include $(DEVICE_PATH)/shared/graphics/mesa/device.mk
 else
