@@ -145,102 +145,6 @@ def patch_gpt_tables(qcombin_board_dir, flash_dir):
     print(f"    - P70 userdata: {USERDATA_START_SECTOR} .. {USERDATA_END_SECTOR} (~{(USERDATA_SECTORS*512)/(1024**3):.2f} GB)")
 
 
-def generate_rawprogram(src_xml, dst_xml, flash_dir, include_userdata=True):
-    tree = ET.parse(src_xml)
-    root = tree.getroot()
-
-    new_programs = []
-    has_boot_img = os.path.isfile(os.path.join(flash_dir, "boot.img"))
-
-    for p in list(root):
-        label = p.get("label", "")
-        fn = p.get("filename", "")
-
-        # boot_a and boot_b are 4MB dummy partitions on Uno Q.
-        # If boot.img is not present, clear filename so qdl does not fail.
-        if label in ["boot_a", "boot_b"]:
-            if not has_boot_img:
-                p.set("filename", "")
-            new_programs.append(p)
-
-        elif label == "efi":
-            p.set("filename", "../disk-sdcard.img.esp")
-            p.set("size_in_KB", "524288.0")
-            p.set("num_partition_sectors", str(EFI_SECTORS))
-            p.set("start_sector", str(EFI_START_SECTOR))
-            p.set("start_byte_hex", hex(EFI_START_SECTOR * 512))
-            new_programs.append(p)
-
-        elif label in ["rootfs", "super"]:
-            # Replace rootfs with LineageOS super partition
-            p_super = ET.Element("program", {
-                "start_sector": str(SUPER_START_SECTOR),
-                "size_in_KB": "4194304.0",
-                "physical_partition_number": "0",
-                "partofsingleimage": "false",
-                "file_sector_offset": "0",
-                "num_partition_sectors": str(SUPER_SECTORS),
-                "readbackverify": "false",
-                "filename": "../disk-sdcard.img.root",
-                "sparse": "false",
-                "start_byte_hex": hex(SUPER_START_SECTOR * 512),
-                "SECTOR_SIZE_IN_BYTES": "512",
-                "label": "super",
-            })
-            new_programs.append(p_super)
-
-            # Add metadata partition (wipe first 33 sectors)
-            p_metadata = ET.Element("program", {
-                "start_sector": str(METADATA_START_SECTOR),
-                "size_in_KB": "16.5",
-                "physical_partition_number": "0",
-                "partofsingleimage": "false",
-                "file_sector_offset": "0",
-                "num_partition_sectors": "33",
-                "readbackverify": "false",
-                "filename": "zeros_33sectors.bin",
-                "sparse": "false",
-                "start_byte_hex": hex(METADATA_START_SECTOR * 512),
-                "SECTOR_SIZE_IN_BYTES": "512",
-                "label": "metadata",
-            })
-            new_programs.append(p_metadata)
-
-            if include_userdata:
-                # Add userdata partition (wipe first 33 sectors to trigger clean format on first boot)
-                p_userdata = ET.Element("program", {
-                    "start_sector": str(USERDATA_START_SECTOR),
-                    "size_in_KB": "16.5",
-                    "physical_partition_number": "0",
-                    "partofsingleimage": "false",
-                    "file_sector_offset": "0",
-                    "num_partition_sectors": "33",
-                    "readbackverify": "false",
-                    "filename": "zeros_33sectors.bin",
-                    "sparse": "false",
-                    "start_byte_hex": hex(USERDATA_START_SECTOR * 512),
-                    "SECTOR_SIZE_IN_BYTES": "512",
-                    "label": "userdata",
-                })
-                new_programs.append(p_userdata)
-
-        elif label == "userdata":
-            # Skip old placeholder userdata
-            continue
-        else:
-            new_programs.append(p)
-
-    # Rebuild root
-    root.clear()
-    for p in new_programs:
-        root.append(p)
-
-    # Write out cleanly formatted XML
-    ET.indent(tree, space="  ", level=0)
-    tree.write(dst_xml, encoding="utf-8", xml_declaration=True)
-    print(f"[+] Successfully generated {os.path.basename(dst_xml)}")
-
-
 def build_efi_image(out_path, kernel_path, ramdisk_path, dtb_path, cmdline):
     print(f"[*] Building 512MB boot partition ({out_path})...")
 
@@ -461,10 +365,10 @@ def main():
     # 2. Generate Android GPT partitions into flash_dir
     patch_gpt_tables(qcombin_board_dir, flash_dir)
 
-    # 3. Generate rawprogram0.xml & rawprogram0.nouser.xml into flash_dir
-    src_rawprogram = os.path.join(qcombin_board_dir, "rawprogram0.xml")
-    generate_rawprogram(src_rawprogram, os.path.join(flash_dir, "rawprogram0.xml"), flash_dir, include_userdata=True)
-    generate_rawprogram(src_rawprogram, os.path.join(flash_dir, "rawprogram0.nouser.xml"), flash_dir, include_userdata=False)
+    # 3. Copy rawprogram0.xml into flash_dir
+    src_rawprogram = os.path.join(top_dir, "device/arduino/imola/tools/rawprogram0.xml")
+    dst_rawprogram = os.path.join(flash_dir, "rawprogram0.xml")
+    shutil.copy2(src_rawprogram, dst_rawprogram)
 
     # 4. Build disk-sdcard.img.esp (512MB boot partition) in package root
     esp_img_path = os.path.join(out_dir, "disk-sdcard.img.esp")
