@@ -8,7 +8,7 @@ distribution-ready image package matching the official Arduino / Armbian layout.
 Package Layout:
   arduino-images/
   ├── disk-sdcard.img.esp       # 512MB EFI/boot partition (P67: boot.scr, Image, ramdisk, dtb)
-  ├── disk-sdcard.img.root      # 4096MB Root/OS partition (P68: super.img)
+  ├── disk-sdcard.img.root      # 4096MB Root/OS partition (P69: rootfs)
   └── flash/                    # Qualcomm firmware, programmer, partition tables & XMLs
       ├── prog_firehose_ddr.elf # EDL programmer
       ├── rawprogram0.xml       # References ../disk-sdcard.img.esp & ../disk-sdcard.img.root
@@ -50,20 +50,23 @@ EFI_START_SECTOR = 985408
 EFI_SECTORS = 1048576  # 512 MB
 EFI_END_SECTOR = EFI_START_SECTOR + EFI_SECTORS - 1  # 2033983
 
-# P68: super (4096MB)
-SUPER_START_SECTOR = 2033984
-SUPER_SECTORS = 8388608  # 4096 MB
-SUPER_END_SECTOR = SUPER_START_SECTOR + SUPER_SECTORS - 1  # 10422591
-
-# P69: metadata (64MB)
-METADATA_START_SECTOR = 10422592
+# P68: metadata (64MB), moved before rootfs
+METADATA_START_SECTOR = 2033984
 METADATA_SECTORS = 131072  # 64 MB
-METADATA_END_SECTOR = METADATA_START_SECTOR + METADATA_SECTORS - 1  # 10553663
+METADATA_END_SECTOR = METADATA_START_SECTOR + METADATA_SECTORS - 1  # 2165055
 
-# P70: userdata (Fill remaining eMMC up to LAST_USABLE_LBA)
+# P69: rootfs (4096MB)
+ROOTFS_START_SECTOR = METADATA_END_SECTOR + 1
+ROOTFS_SECTORS = 8388608  # 4096 MB
+ROOTFS_END_SECTOR = ROOTFS_START_SECTOR + ROOTFS_SECTORS - 1  # 10553663
+
+# P70: userdata (fill remaining eMMC up to LAST_USABLE_LBA)
 USERDATA_START_SECTOR = 10553664
 USERDATA_END_SECTOR = LAST_USABLE_LBA
 USERDATA_SECTORS = USERDATA_END_SECTOR - USERDATA_START_SECTOR + 1  # ~24.09 GB
+
+if ROOTFS_END_SECTOR + 1 != USERDATA_START_SECTOR:
+    raise ValueError("rootfs and userdata partition boundaries are not contiguous")
 
 LINUX_FS_GUID = uuid.UUID("0fc63daf-8483-4772-8e79-3d69d8477de4").bytes_le
 
@@ -102,6 +105,20 @@ def create_gpt_entry(name, first_lba, last_lba, type_guid_bytes=LINUX_FS_GUID, f
     return struct.pack("<16s16sQQQ", type_guid_bytes, uniq_guid, first_lba, last_lba, flags) + name_bytes
 
 
+def update_gpt_header_crc(data, header_offset, entry_array):
+    """Update a GPT header's partition-array CRC and header CRC in-place."""
+    header_size = struct.unpack_from("<I", data, header_offset + 12)[0]
+    if header_size < 92 or header_offset + header_size > len(data):
+        raise ValueError("invalid GPT header size")
+
+    partition_array_crc = zlib.crc32(entry_array) & 0xFFFFFFFF
+    struct.pack_into("<I", data, header_offset + 88, partition_array_crc)
+
+    struct.pack_into("<I", data, header_offset + 16, 0)
+    header_crc = zlib.crc32(data[header_offset:header_offset + header_size]) & 0xFFFFFFFF
+    struct.pack_into("<I", data, header_offset + 16, header_crc)
+
+
 def patch_gpt_tables(qcombin_board_dir, flash_dir):
     src_main = os.path.join(qcombin_board_dir, "gpt_main0.bin")
     src_backup = os.path.join(qcombin_board_dir, "gpt_backup0.bin")
@@ -113,22 +130,46 @@ def patch_gpt_tables(qcombin_board_dir, flash_dir):
 
     # GPT Partition Entries start at sector 2 (offset 1024) in gpt_main0.bin
     # P67 (index 66): efi (512MB)
-    # P68 (index 67): super (4096MB)
-    # P69 (index 68): metadata (64MB)
+    # P68 (index 67): metadata (64MB)
+    # P69 (index 68): rootfs (4096MB)
     # P70 (index 69): userdata (~24.1GB)
 
-    entry_super = create_gpt_entry("super", SUPER_START_SECTOR, SUPER_END_SECTOR, LINUX_FS_GUID, 0)
     entry_metadata = create_gpt_entry("metadata", METADATA_START_SECTOR, METADATA_END_SECTOR, LINUX_FS_GUID, 0)
+    entry_rootfs = create_gpt_entry("rootfs", ROOTFS_START_SECTOR, ROOTFS_END_SECTOR, LINUX_FS_GUID, 0)
     entry_userdata = create_gpt_entry("userdata", USERDATA_START_SECTOR, USERDATA_END_SECTOR, LINUX_FS_GUID, 0)
 
     # Insert into main GPT (offset = 1024 + idx * 128)
-    main_data[1024 + 67 * 128 : 1024 + 68 * 128] = entry_super
-    main_data[1024 + 68 * 128 : 1024 + 69 * 128] = entry_metadata
+    main_data[1024 + 67 * 128 : 1024 + 68 * 128] = entry_metadata
+    main_data[1024 + 68 * 128 : 1024 + 69 * 128] = entry_rootfs
     main_data[1024 + 69 * 128 : 1024 + 70 * 128] = entry_userdata
 
-    # In backup GPT, partition entries start at sector 0 (offset 0..16384)
-    # Mirror the entire 32 sectors of partition entries
-    backup_data[0:16384] = main_data[1024:17408]
+    primary_header_offset = 512
+    primary_num_entries = struct.unpack_from("<I", main_data, primary_header_offset + 80)[0]
+    primary_entry_size = struct.unpack_from("<I", main_data, primary_header_offset + 84)[0]
+    primary_entries_size = primary_num_entries * primary_entry_size
+    primary_entries = main_data[1024:1024 + primary_entries_size]
+
+    # Finalize primary geometry and CRCs so the generated binary is valid before flashing.
+    struct.pack_into("<Q", main_data, primary_header_offset + 32, TOTAL_DISK_SECTORS - 1)
+    struct.pack_into("<Q", main_data, primary_header_offset + 48, LAST_USABLE_LBA)
+    update_gpt_header_crc(main_data, primary_header_offset, primary_entries)
+
+    # Backup GPT entries mirror the complete primary partition-entry array.
+    backup_data[0:primary_entries_size] = primary_entries
+
+    backup_header_offset = 32 * 512
+    backup_num_entries = struct.unpack_from("<I", backup_data, backup_header_offset + 80)[0]
+    backup_entry_size = struct.unpack_from("<I", backup_data, backup_header_offset + 84)[0]
+    if (backup_num_entries, backup_entry_size) != (primary_num_entries, primary_entry_size):
+        raise ValueError("primary and backup GPT entry formats differ")
+
+    # Finalize backup geometry and CRCs. The backup entry array ends 33 sectors
+    # before the final disk sector.
+    struct.pack_into("<Q", backup_data, backup_header_offset + 24, TOTAL_DISK_SECTORS - 1)
+    struct.pack_into("<Q", backup_data, backup_header_offset + 32, 1)
+    struct.pack_into("<Q", backup_data, backup_header_offset + 48, LAST_USABLE_LBA)
+    struct.pack_into("<Q", backup_data, backup_header_offset + 72, TOTAL_DISK_SECTORS - 33)
+    update_gpt_header_crc(backup_data, backup_header_offset, backup_data[:primary_entries_size])
 
     dst_main = os.path.join(flash_dir, "gpt_main0.bin")
     dst_backup = os.path.join(flash_dir, "gpt_backup0.bin")
@@ -140,8 +181,8 @@ def patch_gpt_tables(qcombin_board_dir, flash_dir):
 
     print(f"[+] Successfully generated Android GPT tables in flash/:")
     print(f"    - P67 efi:      {EFI_START_SECTOR} .. {EFI_END_SECTOR} (512 MB)")
-    print(f"    - P68 super:    {SUPER_START_SECTOR} .. {SUPER_END_SECTOR} (4096 MB)")
-    print(f"    - P69 metadata: {METADATA_START_SECTOR} .. {METADATA_END_SECTOR} (64 MB)")
+    print(f"    - P68 metadata: {METADATA_START_SECTOR} .. {METADATA_END_SECTOR} (64 MB)")
+    print(f"    - P69 rootfs:   {ROOTFS_START_SECTOR} .. {ROOTFS_END_SECTOR} (4096 MB)")
     print(f"    - P70 userdata: {USERDATA_START_SECTOR} .. {USERDATA_END_SECTOR} (~{(USERDATA_SECTORS*512)/(1024**3):.2f} GB)")
 
 
