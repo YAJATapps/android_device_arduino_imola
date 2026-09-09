@@ -312,6 +312,7 @@ def main():
             "earlycon console=ttyMSM0,115200n8 init=/init "
             "clk_ignore_unused pd_ignore_unused "
             "androidboot.hardware=imola androidboot.boot_devices=soc@0/4744000.mmc "
+            "androidboot.force_super_partition=rootfs "
             "androidboot.verifiedbootstate=orange androidboot.slot_suffix=_a "
             "androidboot.selinux=permissive efi=noruntime "
             "androidboot.serialno=imola0001 "
