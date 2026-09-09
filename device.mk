@@ -168,8 +168,8 @@ PRODUCT_VENDOR_PROPERTIES += \
     debug.stagefright.c2inputsurface=-1
 
 # TODO: Remove before release (skips ~50s on-device dex2oat on fresh flash)
-PRODUCT_VENDOR_PROPERTIES += \
-    dalvik.vm.disable-odrefresh=true
+#PRODUCT_VENDOR_PROPERTIES += \
+#    dalvik.vm.disable-odrefresh=true
 
 # ADB configuration (TCP 5555 for network ADB; USB operates in host mode)
 PRODUCT_PROPERTY_OVERRIDES += \
