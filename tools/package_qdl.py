@@ -305,7 +305,12 @@ def main():
     parser.add_argument("--desktop", action="store_true", help="Package directly to ~/Desktop/arduino-images")
     parser.add_argument("--qcombin-dir", default=None, help="Path to qcombin/Agatti directory")
     parser.add_argument("--skip-super", action="store_true", help="Skip super.img processing (faster for testing)")
-    parser.add_argument("--archive", choices=["tar.xz", "tar.zst", "zip"], default=None, help="Optionally compress the release package into an archive")
+    parser.add_argument(
+        "--archive",
+        choices=["tar.zst", "tar.xz", "zip", "none"],
+        default="tar.zst",
+        help="Compress release package into an archive (default: tar.zst, 'none' to skip)",
+    )
     parser.add_argument(
         "--cmdline",
         default=(
@@ -338,7 +343,6 @@ def main():
     # Detect Qcombin directory
     qcombin_candidates = [
         args.qcombin_dir,
-        os.path.join(os.path.expanduser("~"), "Desktop/qcombin/Agatti"),
         os.path.join(top_dir, "vendor/arduino/imola/qcombin/Agatti"),
     ]
     qcombin_dir = None
@@ -401,8 +405,25 @@ def main():
         ext = os.path.splitext(item)[1].lower()
         if ext in [".elf", ".mbn", ".bin"] and not item.startswith("gpt_main0") and not item.startswith("gpt_backup0"):
             shutil.copy2(os.path.join(qcombin_board_dir, item), flash_dir)
-        elif item in ["LICENSE", "boot.img"]:
+        elif item == "LICENSE":
             shutil.copy2(os.path.join(qcombin_board_dir, item), flash_dir)
+
+    # Copy bootloader boot.img (from vendor proprietary/bootloader, or qcombin fallback)
+    bootloader_candidates = [
+        os.path.join(top_dir, "vendor/arduino/imola/proprietary/bootloader/boot.img"),
+        os.path.join(qcombin_board_dir, "boot.img"),
+    ]
+    bootloader_src = None
+    for cand in bootloader_candidates:
+        if cand and os.path.isfile(cand):
+            bootloader_src = os.path.abspath(cand)
+            break
+
+    if bootloader_src:
+        print(f"[*] Copying bootloader boot.img from: {bootloader_src}")
+        shutil.copy2(bootloader_src, os.path.join(flash_dir, "boot.img"))
+    else:
+        print("[-] WARNING: bootloader boot.img not found in vendor/arduino/imola/proprietary/bootloader/boot.img or qcombin!")
 
     # 2. Generate Android GPT partitions into flash_dir
     patch_gpt_tables(qcombin_board_dir, flash_dir)
@@ -422,7 +443,7 @@ def main():
         process_super_image(super_path, dst_root, simg2img_bin)
 
     # 6. Optionally archive package
-    if args.archive:
+    if args.archive and args.archive != "none":
         date_str = time.strftime("%Y%m%d")
         archive_name = f"{RELEASE_PREFIX}{date_str}.{args.archive}"
         archive_path = os.path.join(os.path.dirname(out_dir), archive_name)
