@@ -9,7 +9,7 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit_only.mk)
 # Inherit from device.
 $(call inherit-product, device/arduino/imola/device.mk)
 
-PRODUCT_AAPT_PREF_CONFIG := tvdpi
+PRODUCT_AAPT_PREF_CONFIG := xhdpi
 PRODUCT_CHARACTERISTICS := tv,nosdcard
 
 $(call inherit-product, vendor/lineage/config/common_tv.mk)

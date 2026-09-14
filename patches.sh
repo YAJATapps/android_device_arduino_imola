@@ -17,4 +17,10 @@ if [ -f "$TOP/external/libjxl/Android.bp" ]; then
     sed -i '/vendor_available: true,/d' "$TOP/external/libjxl/Android.bp"
 fi
 
+# device/lineage/sepolicy
+if [ -f "$TOP/device/lineage/sepolicy/atv/vendor/gmscore_app.te" ]; then
+    echo "Patching device/lineage/sepolicy: disabling apk_verity_prop for gmscore_app..."
+    sed -i 's/^get_prop(gmscore_app, apk_verity_prop)/#get_prop(gmscore_app, apk_verity_prop)/' "$TOP/device/lineage/sepolicy/atv/vendor/gmscore_app.te"
+fi
+
 echo "Patches applied successfully."
