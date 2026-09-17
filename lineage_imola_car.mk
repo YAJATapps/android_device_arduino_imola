@@ -20,6 +20,7 @@ $(call inherit-product, device/lineage/car/lineage_car_vendor.mk)
 $(call inherit-product, packages/services/Car/car_product/build/car_generic_system.mk)
 $(call inherit-product, packages/services/Car/car_product/build/car_system_ext.mk)
 $(call inherit-product, packages/services/Car/car_product/build/car_product.mk)
+$(call inherit-product, packages/services/Car/car_product/build/car_vendor.mk)
 
 SYSTEM_OPTIMIZE_JAVA := false
 PRODUCT_BROKEN_SUBOPTIMAL_ORDER_OF_SYSTEM_SERVER_JARS := true
