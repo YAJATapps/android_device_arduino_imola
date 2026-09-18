@@ -221,12 +221,11 @@ def build_efi_image(out_path, kernel_path, ramdisk_path, dtb_path, cmdline):
             'setenv devnum "0"\n'
             'test -n "${distro_bootpart}" || setenv distro_bootpart "43"\n'
             f'setenv bootargs "{cmdline}"\n'
-            "echo \"Loading LineageOS 23.2 Android 16 kernel, ramdisk, dtb...\"\n"
             "load ${devtype} ${devnum}:${distro_bootpart} ${kernel_addr_r} Image\n"
             "load ${devtype} ${devnum}:${distro_bootpart} ${ramdisk_addr_r} ramdisk.img\n"
             "setenv ramdisk_size ${filesize}\n"
             "load ${devtype} ${devnum}:${distro_bootpart} ${fdt_addr_r} dtb.img\n"
-            "echo \"Booting Android 16 via booti...\"\n"
+            'echo "Booting Android"\n'
             "booti ${kernel_addr_r} ${ramdisk_addr_r}:${ramdisk_size} ${fdt_addr_r}\n"
         )
         boot_cmd_file = os.path.join(tmp_dir, "boot.cmd")
@@ -314,7 +313,7 @@ def main():
     parser.add_argument(
         "--cmdline",
         default=(
-            "earlycon console=ttyMSM0,115200n8 init=/init "
+            "earlycon console=tty0 console=ttyMSM0,115200n8 init=/init "
             "clk_ignore_unused pd_ignore_unused "
             "androidboot.hardware=imola androidboot.boot_devices=soc@0/4744000.mmc "
             "androidboot.force_super_partition=rootfs "
@@ -322,6 +321,7 @@ def main():
             "androidboot.selinux=permissive efi=noruntime "
             "androidboot.serialno=imola0001 "
             "firmware_class.path=/vendor/firmware,/vendor/firmware/qcom "
+            "vt.global_cursor_default=0 "
             "printk.devkmsg=on loglevel=7"
         ),
         help="Kernel command line to embed in /boot.scr",
