@@ -19,12 +19,10 @@
 
 VENDOR_DLKM_KERNEL_MODULES_LIST := \
     af_alg.ko \
-    anx7625.ko \
     apr.ko \
     ath.ko \
     ath10k_core.ko \
     ath10k_snoc.ko \
-    backlight.ko \
     bluetooth.ko \
     bnep.ko \
     br_netfilter.ko \
@@ -33,47 +31,28 @@ VENDOR_DLKM_KERNEL_MODULES_LIST := \
     btqca.ko \
     cdc_ether.ko \
     cdc_ncm.ko \
-    cec.ko \
     cfg80211.ko \
-    dispcc-qcm2290.ko \
-    drm.ko \
-    drm_client_lib.ko \
-    drm_display_helper.ko \
-    drm_dp_aux_bus.ko \
-    drm_exec.ko \
-    drm_kms_helper.ko \
     ecc.ko \
     ecdh_generic.ko \
-    gpi.ko \
-    gpu-sched.ko \
-    gpucc-qcm2290.ko \
     hci_uart.ko \
-    i2c-qcom-geni.ko \
     icc-bwmon.ko \
     joydev.ko \
     libarc4.ko \
     libdes.ko \
     llc.ko \
-    llcc-qcom.ko \
     lmh.ko \
     mac80211.ko \
     mc.ko \
     mcp251xfd.ko \
-    mdt_loader.ko \
-    msm.ko \
-    ocmem.ko \
     onboard_usb_dev.ko \
     overlay.ko \
     pdr_interface.ko \
-    phy-qcom-qmp-usbc.ko \
-    phy-qcom-qusb2.ko \
     pinctrl-lpass-lpi.ko \
     pinctrl-sm6115-lpass-lpi.ko \
     pwrseq-core.ko \
     qcom-pon.ko \
     qcom-rng.ko \
     qcom-spmi-adc5.ko \
-    qcom-spmi-temp-alarm.ko \
     qcom-wdt.ko \
     qcom_common.ko \
     qcom_glink_smem.ko \
@@ -95,9 +74,7 @@ VENDOR_DLKM_KERNEL_MODULES_LIST := \
     rmtfs_mem.ko \
     rpmsg_char.ko \
     rpmsg_ctrl.ko \
-    rtc-pm8xxx.ko \
     slimbus.ko \
-    snd-soc-hdmi-codec.ko \
     snd-soc-lpass-macro-common.ko \
     snd-soc-lpass-rx-macro.ko \
     snd-soc-lpass-tx-macro.ko \
@@ -114,7 +91,6 @@ VENDOR_DLKM_KERNEL_MODULES_LIST := \
     spi-geni-qcom.ko \
     spidev.ko \
     stp.ko \
-    typec.ko \
     usbnet.ko \
     v4l2-mem2mem.ko \
     venus-core.ko \
