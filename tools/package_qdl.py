@@ -18,7 +18,7 @@ Package Layout:
       └── ... (Qualcomm binaries: xbl, tz, hyp, abl/u-boot, rpm, etc.)
 
 Flashing compatibility:
-  - Official arduino-flasher-cli / armbian-flasher
+  - Official arduino-flasher-cli / Armbian Imager
   - Standard Qualcomm EDL tools (qdl):
       cd <package_dir>/flash
       qdl --storage emmc prog_firehose_ddr.elf rawprogram0.xml patch0.xml
@@ -469,9 +469,9 @@ def main():
     print("   └── flash/                    (Qualcomm firmware, EDL programmer, XMLs)")
     print("")
     print(" Compatible Flashing Methods:")
-    print("   1. Official Arduino Flasher CLI:")
-    print(f"      arduino-flasher-cli flash {out_dir}")
-    print("   2. Armbian Flasher GUI / CLI")
+    print("   1. Arduino Flasher (v0.5.4+):")
+    print(f"      arduino-flasher-cli flash --board ventunoq {out_dir}")
+    print("   2. Armbian Imager")
     print("   3. Native QDL (standalone):")
     print(f"      cd {flash_dir}")
     print("      qdl --storage emmc prog_firehose_ddr.elf rawprogram0.xml patch0.xml")
