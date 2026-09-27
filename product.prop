@@ -39,3 +39,6 @@ bluetooth.profile.vcp.controller.enabled=false
 # Default USB / ADB configuration
 persist.sys.usb.config=adb
 ro.adb.secure=0
+
+# Disable Lockscreen by default
+ro.lockscreen.disable.default=true

@@ -23,4 +23,10 @@ if [ -f "$TOP/device/lineage/sepolicy/atv/vendor/gmscore_app.te" ]; then
     sed -i 's/^get_prop(gmscore_app, apk_verity_prop)/#get_prop(gmscore_app, apk_verity_prop)/' "$TOP/device/lineage/sepolicy/atv/vendor/gmscore_app.te"
 fi
 
+# packages/apps/SetupWizard
+if [ -f "$TOP/packages/apps/SetupWizard/src/org/lineageos/setupwizard/WelcomeActivity.java" ]; then
+    echo "Patching packages/apps/SetupWizard: auto-finishing setup on boot..."
+    sed -i 's/if (Build.TYPE.equals("eng"))/SetupWizardUtils.finishSetupWizard(this); if (false)/' "$TOP/packages/apps/SetupWizard/src/org/lineageos/setupwizard/WelcomeActivity.java"
+fi
+
 echo "Patches applied successfully."
