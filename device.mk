@@ -113,9 +113,8 @@ PRODUCT_PACKAGES += \
     tqftpserv \
     qrtr-cfg
 
-# Arduino router, GPIO helper, and control app
+# Hardware GPIO bridge, helper, and control app
 PRODUCT_PACKAGES += \
-    arduino-router \
     imola-gpio \
     imola-bridge \
     WiringUno

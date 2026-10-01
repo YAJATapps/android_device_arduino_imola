@@ -121,6 +121,13 @@ service arduino-router /vendor/bin/arduino-router --unix-port /dev/socket/arduin
     stdio_to_kmsg
     restart_period 3
 
+service openocd /vendor/bin/openocd-launcher
+    class main
+    user root
+    group system
+    stdio_to_kmsg
+    restart_period 3
+
 service imola-bridge /vendor/bin/imola-bridge
     class main
     user root

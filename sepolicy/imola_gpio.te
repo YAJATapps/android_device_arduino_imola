@@ -16,3 +16,10 @@ allow imola_gpio { kmsg_debug_device kmsg_device }:chr_file rw_file_perms;
 # Connect to arduino-router socket
 allow imola_gpio arduino_router_socket:sock_file { getattr write };
 allow imola_gpio arduino_router:unix_stream_socket { connectto read write };
+
+# Allow OpenOCD daemon and imola-bridge to bind/connect over localhost TCP (port 4444)
+allow imola_gpio self:tcp_socket create_stream_socket_perms;
+allow imola_gpio port:tcp_socket { name_connect name_bind };
+allow imola_gpio node:tcp_socket node_bind;
+allow imola_gpio fwmarkd_socket:sock_file write;
+allow imola_gpio netd:unix_stream_socket connectto;

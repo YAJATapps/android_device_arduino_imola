@@ -74,6 +74,9 @@
 /vendor/bin/imola-ready									u:object_r:imola_gpio_exec:s0
 /vendor/bin/imola-reset									u:object_r:imola_gpio_exec:s0
 /vendor/bin/imola-bridge								u:object_r:imola_gpio_exec:s0
+/vendor/bin/openocd										u:object_r:imola_gpio_exec:s0
+/vendor/bin/openocd-launcher							u:object_r:imola_gpio_exec:s0
+/vendor/bin/ld-linux-aarch64\.so\.1						u:object_r:imola_gpio_exec:s0
 
 /vendor/firmware(/.*)?									u:object_r:vendor_firmware_file:s0
 
