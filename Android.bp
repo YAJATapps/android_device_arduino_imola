@@ -34,8 +34,16 @@ license {
 
 subdirs = [
     "shared/utils/bdaddr",
+    "shared/utils/imola-gpio",
     "shared/utils/pd-mapper",
     "shared/utils/qrtr",
     "shared/utils/rmtfs",
     "shared/utils/tqftpserv",
 ]
+
+cc_prebuilt_binary {
+    name: "arduino-router",
+    srcs: ["bin/arduino-router"],
+    vendor: true,
+    check_elf_files: false,
+}

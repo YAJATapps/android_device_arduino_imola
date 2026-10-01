@@ -18,6 +18,9 @@
 /dev/dri/renderD128			u:object_r:gpu_device:s0
 /dev/qcom_rmtfs_mem1			u:object_r:rmtfs_device:s0
 /dev/ttyMSM0				u:object_r:console_device:s0
+/dev/ttyHS1				u:object_r:arduino_router_device:s0
+/dev/gpiochip[0-9]+			u:object_r:gpio_chip_device:s0
+/dev/socket/arduino-router\.sock	u:object_r:arduino_router_socket:s0
 
 /sys/bus/platform/drivers/qcom-q6v5-mss							u:object_r:sysfs_mss:s0
 /sys/module/qcom_q6v5_mss								u:object_r:sysfs_mss:s0
@@ -66,6 +69,11 @@
 /vendor/bin/set_ethaddr\.sh								u:object_r:set_ethaddr_exec:s0
 /vendor/bin/set_hw\.sh									u:object_r:set_hw_exec:s0
 /vendor/bin/set_udc\.sh									u:object_r:set_udc_exec:s0
+/vendor/bin/arduino-router								u:object_r:arduino_router_exec:s0
+/vendor/bin/imola-gpio									u:object_r:imola_gpio_exec:s0
+/vendor/bin/imola-ready									u:object_r:imola_gpio_exec:s0
+/vendor/bin/imola-reset									u:object_r:imola_gpio_exec:s0
+/vendor/bin/imola-bridge								u:object_r:imola_gpio_exec:s0
 
 /vendor/firmware(/.*)?									u:object_r:vendor_firmware_file:s0
 

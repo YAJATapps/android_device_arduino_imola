@@ -7,3 +7,6 @@ type rmtfs_device, dev_type;
 type modem_block_device, dev_type;
 type tqftpserv_vendor_data_file, file_type, data_file_type, mlstrustedobject;
 type vendor_firmware_file, vendor_file_type, file_type;
+type arduino_router_device, dev_type;
+type gpio_chip_device, dev_type;
+type arduino_router_socket, coredomain_socket, file_type, mlstrustedobject;

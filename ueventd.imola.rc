@@ -13,3 +13,6 @@ subsystem usbmisc
 # usb webcam?
 /dev/video0 0660 system camera
 /dev/video1 0660 system camera
+
+# arduino mcu serial
+/dev/ttyHS1 0660 root system

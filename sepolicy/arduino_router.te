@@ -1,0 +1,25 @@
+type arduino_router, domain, socket_between_core_and_vendor_violators;
+type arduino_router_exec, exec_type, vendor_file_type, file_type;
+init_daemon_domain(arduino_router)
+
+# Serial port communication with STM32 MCU (/dev/ttyHS1)
+allow arduino_router arduino_router_device:chr_file rw_file_perms;
+
+# Socket management in /dev/socket
+allow arduino_router socket_device:dir { write add_name remove_name search };
+allow arduino_router arduino_router_socket:sock_file { create unlink setattr getattr rw_file_perms };
+allow arduino_router self:unix_stream_socket { create bind listen accept read write ioctl getattr getopt setopt };
+
+# Execute helper commands (--after-ready /vendor/bin/imola-ready)
+allow arduino_router imola_gpio_exec:file rx_file_perms;
+domain_auto_trans(arduino_router, imola_gpio_exec, imola_gpio)
+
+# arduino-router launches helper via sh -c
+allow arduino_router { shell_exec vendor_shell_exec }:file rx_file_perms;
+
+# Allow platform apps (WiringUno) to communicate over the socket
+allow platform_app arduino_router:unix_stream_socket { connectto read write };
+allow platform_app arduino_router_socket:sock_file { getattr write };
+
+# Logging to kmsg / stdio_to_kmsg
+allow arduino_router { kmsg_debug_device kmsg_device }:chr_file rw_file_perms;

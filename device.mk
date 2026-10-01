@@ -113,6 +113,13 @@ PRODUCT_PACKAGES += \
     tqftpserv \
     qrtr-cfg
 
+# Arduino router, GPIO helper, and control app
+PRODUCT_PACKAGES += \
+    arduino-router \
+    imola-gpio \
+    imola-bridge \
+    WiringUno
+
 # Hardware scripts
 PRODUCT_COPY_FILES += \
     $(DEVICE_PATH)/shared/utils/set_hw.sh:$(TARGET_COPY_OUT_VENDOR)/bin/set_hw.sh \
