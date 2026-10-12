@@ -119,8 +119,7 @@ BOARD_HAVE_BLUETOOTH := true
 
 # SELinux
 BOARD_SEPOLICY_DIRS += \
-    $(DEVICE_PATH)/sepolicy \
-    system/bt/vendor_libs/linux/sepolicy
+    $(DEVICE_PATH)/sepolicy
 
 # Dexpreopt
 ifeq ($(HOST_OS),linux)
