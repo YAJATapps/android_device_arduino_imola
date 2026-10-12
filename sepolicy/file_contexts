@@ -55,8 +55,6 @@
 /data/vendor/readwrite(/.*)?								u:object_r:tqftpserv_vendor_data_file:s0
 /data/vendor/readonly(/.*)?								u:object_r:tqftpserv_vendor_data_file:s0
 
-/system/bin/tinymix									u:object_r:tinymix_exec:s0
-
 /vendor/bin/grep									u:object_r:vendor_toolbox_exec:s0
 /vendor/bin/ifconfig									u:object_r:vendor_toolbox_exec:s0
 /vendor/bin/pd-mapper									u:object_r:pd_mapper_exec:s0
