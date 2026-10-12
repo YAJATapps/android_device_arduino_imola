@@ -2,7 +2,7 @@
 """
 package_qdl.py
 
-Packages LineageOS 23.2 (Android 16) for Arduino Uno Q (Imola) into a
+Packages LineageOS 24 (Android 17) for Arduino Uno Q (Imola) into a
 distribution-ready image package matching the official Arduino / Armbian layout.
 
 Package Layout:
@@ -298,7 +298,7 @@ def process_super_image(src_super, dst_super, simg2img_bin):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Package LineageOS 23.2 for Arduino Uno Q into official release format")
+    parser = argparse.ArgumentParser(description="Package LineageOS 24 for Arduino Uno Q into official release format")
     parser.add_argument("--top", default=None, help="Path to Android build root directory")
     parser.add_argument("--out-dir", default=None, help="Target directory for release package (defaults to product_out/arduino-images)")
     parser.add_argument("--desktop", action="store_true", help="Package directly to ~/Desktop/arduino-images")
