@@ -37,8 +37,8 @@ import uuid
 import xml.etree.ElementTree as ET
 import zlib
 
-# Release archive naming prefix (defaults to LineageOS-23.2-imola-, can be overridden via RELEASE_PREFIX)
-RELEASE_PREFIX = os.environ.get("RELEASE_PREFIX", "LineageOS-23.2-imola-")
+# Release archive naming prefix (defaults to LineageOS-24.0-imola-, can be overridden via RELEASE_PREFIX)
+RELEASE_PREFIX = os.environ.get("RELEASE_PREFIX", "LineageOS-24.0-imola-")
 
 # Default disk geometry for 32GB eMMC on Arduino Uno Q
 TOTAL_DISK_SECTORS = 61071360  # ~29.1 GiB usable
@@ -213,7 +213,7 @@ def build_efi_image(out_path, kernel_path, ramdisk_path, dtb_path, cmdline):
     with tempfile.TemporaryDirectory() as tmp_dir:
         # A) Native U-Boot boot.cmd & boot.scr
         boot_cmd_text = (
-            "# LineageOS 23.2 U-Boot Boot Script for Arduino Uno Q (Imola)\n"
+            "# LineageOS 24 U-Boot Boot Script for Arduino Uno Q (Imola)\n"
             'setenv kernel_addr_r "0x42000000"\n'
             'setenv fdt_addr_r "0x48000000"\n'
             'setenv ramdisk_addr_r "0x82000000"\n'
@@ -242,7 +242,7 @@ def build_efi_image(out_path, kernel_path, ramdisk_path, dtb_path, cmdline):
             "timeout 10\n"
             "\n"
             "label LineageOS\n"
-            "  menu label LineageOS 23.2 (Android 16)\n"
+            "  menu label LineageOS 24 (Android 17)\n"
             "  kernel /Image\n"
             "  initrd /ramdisk.img\n"
             "  fdt /dtb.img\n"
@@ -370,7 +370,7 @@ def main():
     os.makedirs(flash_dir, exist_ok=True)
 
     print(f"========================================================")
-    print(f" Packaging LineageOS 23.2 Official Release Bundle")
+    print(f" Packaging LineageOS 24 Official Release Bundle")
     print(f" Target Device: Arduino Uno Q (Imola)")
     print(f" Top Dir:       {top_dir}")
     print(f" Product Out:   {product_out}")
@@ -460,12 +460,12 @@ def main():
 
     print("")
     print("========================================================")
-    print(" [SUCCESS] LineageOS 23.2 Image Package Ready!")
+    print(" [SUCCESS] LineageOS 24 Image Package Ready!")
     print(f" Location: {out_dir}")
     print(" Package Layout:")
     print(f"   {os.path.basename(out_dir)}/")
     print("   ├── disk-sdcard.img.esp       (512MB EFI/boot partition)")
-    print("   ├── disk-sdcard.img.root      (4096MB LineageOS 23.2 super.img)")
+    print("   ├── disk-sdcard.img.root      (4096MB LineageOS 24 super.img)")
     print("   └── flash/                    (Qualcomm firmware, EDL programmer, XMLs)")
     print("")
     print(" Compatible Flashing Methods:")
