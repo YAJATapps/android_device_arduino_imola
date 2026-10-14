@@ -24,12 +24,16 @@ if [ -f "$TOP/device/lineage/sepolicy/atv/vendor/gmscore_app.te" ]; then
 fi
 
 # packages/apps/SetupWizard
-if [ -f "$TOP/packages/apps/SetupWizard/app/src/main/java/org/lineageos/setupwizard/WelcomeActivity.kt" ]; then
-    echo "Patching packages/apps/SetupWizard: enabling skip on boot (Kotlin)..."
-    sed -i 's/get() = Build.TYPE == "eng"/get() = true/' "$TOP/packages/apps/SetupWizard/app/src/main/java/org/lineageos/setupwizard/WelcomeActivity.kt"
-elif [ -f "$TOP/packages/apps/SetupWizard/src/org/lineageos/setupwizard/WelcomeActivity.java" ]; then
+SUW_WELCOME="$TOP/packages/apps/SetupWizard/app/src/main/java/org/lineageos/setupwizard/WelcomeActivity.kt"
+if [ -f "$SUW_WELCOME" ] && ! grep -q "SetupWizardUtils.finishSetupWizard(this)" "$SUW_WELCOME"; then
     echo "Patching packages/apps/SetupWizard: auto-finishing setup on boot..."
-    sed -i 's/if (Build.TYPE.equals("eng"))/SetupWizardUtils.finishSetupWizard(this); if (false)/' "$TOP/packages/apps/SetupWizard/src/org/lineageos/setupwizard/WelcomeActivity.java"
+    sed -i '/super\.onCreate(savedInstanceState)/a \        if (!isFinishing) { SetupWizardUtils.finishSetupWizard(this); return }' "$SUW_WELCOME"
+fi
+
+SUW_ACTIVITY="$TOP/packages/apps/SetupWizard/app/src/main/java/org/lineageos/setupwizard/SetupWizardActivity.kt"
+if [ -f "$SUW_ACTIVITY" ] && grep -q "^[[:space:]]*SetupWizardUtils\.enableGesturalNavigation(this)" "$SUW_ACTIVITY"; then
+    echo "Patching packages/apps/SetupWizard: skipping enableGesturalNavigation..."
+    sed -i 's/^[[:space:]]*SetupWizardUtils\.enableGesturalNavigation(this)/\/\/ SetupWizardUtils.enableGesturalNavigation(this)/' "$SUW_ACTIVITY"
 fi
 
 # system/vold: C++23 missing <algorithm> header for std::replace
